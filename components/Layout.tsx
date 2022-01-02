@@ -27,7 +27,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
           Built by{' '}
           <a
             className="text-gray-900 dark:text-white"
-            href="https://twitter.com/waleedyt"
+            href="https://twitter.com/_waleed_yt"
           >
             Waleed
           </a>
