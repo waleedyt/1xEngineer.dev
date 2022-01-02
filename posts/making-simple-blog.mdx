@@ -1,0 +1,103 @@
+---
+title: Making of a Simple Blog in a Complicated Way
+description: I wanted to start a personal blog for as long as I can remember. Finally when I got to take the action, it got
+  complex pretty quickly. So, I thought why not to start the journey of blog by writing about the choices I had to make and the work
+  I had to put in.
+date: '2022-01-02'  
+image: '/images/bridge.jpg'
+---
+
+<Image
+  alt={`Bridge`}
+  src={`/images/doors-choices.jpg`}
+  width={1280}
+  height={682}
+  priority
+/>
+
+## Remix or Next.js? Or Hugo, maybe? 🧐
+
+It's hard to acknowledge it in public but it took me an entire day just finalizing the tools required to create this blog. 
+My initial thought was to use [remix.run](https://remix.run/) because of all the hype on Twitter. 
+But then I decided against it and went with [Next.js](https://nextjs.org/) instead because 
+I am well acquainted with this framework already. Finally, I wanted to make [hugo](https://gohugo.io/) work 
+because I am fascinated by Golang and not to mention but hugo says it's the world's fastest 🥳.  
+
+
+During my test drive with different tools it occurred to me that I wanted my blog to have the look and feel of 
+[solarized code themes](https://ethanschoonover.com/solarized/) because of the research behind the color combinations 
+and how it would be perfect for my readers. Of course, being this mindful of the readers also meant I would be spending 
+a lot of time on custom theming in the template to make it work. 
+And this added more complexity to the decisions I eventually took! (will get to that later though)
+
+After spending some time with the hugo template (to give it a try) - cloning the template, runing the server, fidgeting with the code - I realized, I was trying to hit a dart board with an AK47. How's that? I didn't have sufficient understanding of
+hugo's workings on the core and that understanding its templating and configurations could take me days to build what I intended to. 
+
+With a heavy heart I rejected hugo. Believe me, I still question myself on it - cheesy taglines can be very difficult to ignore.
+
+## So, no Hugo! Sounds simple, but is it?
+
+Okay, one less thing to worry about. Next, I only had to decide between Next.js and Remix. I browsed Remix's examples folder, cloned the blog
+starter and realized it was way too basic. Shoot, this meant I will have to integrate the whole hoopla for MDX, code highlighting, and tailwind myself. 
+It still sounded an attractive option because of the thoughts of adding more blog features in future which could fancy the Remix.run bells and whistles.
+
+### But wait! What's MDX and how would it fit into my gameplan? 
+
+Writing html css for each post seemed too much considering I planned on writing often ✌🏽 hence, writing in markdown seemed like an attractive option. 
+A quick research told me MDX is an advanced version of markdown and that it uses jsx tags which sounded useful and cool. 
+However, to use these, I would have to integrate mdx, some tool ending with *matter suffix to parse the frontmatter(sort of metadata and preface) stuff.
+
+I quickly did a github search to see if anybody else created a blog with all the bells and whistles that I could reuse. 
+I was disappointed when I couldn't find any attractive option for Remix. It was hard to keep my hands off remix.run but i managed to
+convince myself that end goal is to write blogposts and not to lose my way in the tooling configuration.
+
+With heavy heart, I finally managed to discard remix.run for Next.js. I would love to try it out for some other project. 
+Who knows I might port this blog in future 😉.
+
+## Next stop, Next.js! - let's get it over with!
+
+It must be easy and quick now since Next.js is the only option. Or so I thought! Basic blog starter template with typescript seemed like a good 
+option. It was a good starting point until i found it's missing the code highlighting setup! 
+No worries. Let's quickly check the web how to do it in 5 minutes. 
+
+Prism, highlight.js, enlighter.js, so many options like always. Which one to use 🤯? Which one is perfect and could allow me to customize the theme 
+with solarized dark colors?
+
+## Being reasonably unreasonable! 
+
+Hold on! Learning a syntax highlighter and its API isn't the endgame. I needed to focus on the bigger picture and start writing 
+the blog. After all, it's not a tool learning fiesta. Life could become much easier if I could reuse something off the shelf. 
+
+A quick search of next.js blog templates on github gave me some really cool options. 
+Okay, but first I needed to come up with a shortlisting criteria i.e typescript, mdx, code highlighting and customization, tailwind css 
+and it would be major help if it's still somehow simple without unneeded features. 
+I thought these were reasonable expectations and I would totally find something. 
+
+In a perfect world, I could conjure up the template! But in the real world, something from my reasonable list was missing in every template. 
+Either they had extra features which seemed hard to cleanup, a missing tool, or they simply had outdated dependencies which could take quite some time to update. 
+
+
+Anyway, after trying out a few templates, I settled with [this one](https://github.com/ChangoMan/nextjs-typescript-mdx-blog.git). This seemed the most 
+reasonable. It resonated with all of my tech stack. I would only have to update the dependencies, clean up the code a tad and remove the 
+next-themes and date-fns package. These packages seemed unreasonable for my lean requirements. 
+Tailwind on the other hand is a different story and seemed good enough on its own.
+
+## Let the games begin!
+
+I rolled up my sleeves, fixed the stuff and customized the theme. I realized it could take quite a while as I ran into some issues due to 
+dependencies upgrade. 
+
+I'll be real honest here, adapting to solarized theme was a daunting task because of setting up colors and then not to mention
+code highlight theming. So I thought of looking it up on github again, and find something off the shelf to save my precious time. 
+
+After spending some time on WWW again, I knew customizing the stuff myself would be the sure-fire way to go about it!
+
+After another weekend of procrastinating and fixing the UI, I had an initial version of blog ready. And finally, on a blessed Monday night 
+I started writing this blog post whilst worrying about the topic for next post!
+
+PS The intention was to share the thought-process that worked(or not) for me and not writing a post bragging about how I created the coolest blog ever. 
+And you know what, I am okay knowing that this thought-process may come off as too complex or too simple to some people and this may not work for rest of the world! 
+But hey, this is the real me and this is how I work, mostly 😃!
+
+
+Go back [Home](/).
