@@ -11,7 +11,7 @@ const Head = ({ customMeta }: { customMeta?: MetaProps }): JSX.Element => {
     title: '1xEngineer',
     description:
       'A Software Engineer working in JavaScript Ecosystem; Exploring the mesh of people and engineering',
-    image: `${WEBSITE_HOST_URL}/images/door-choices.jpg`,
+    image: `${WEBSITE_HOST_URL}/images/doors-choices.jpg`,
     type: 'website',
     ...customMeta,
   };
