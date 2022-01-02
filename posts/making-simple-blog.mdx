@@ -27,11 +27,11 @@ not to mention hugo says it's the world's fastest 🥳.
 During my test drive with different tools it occurred to me that I wanted my blog to have the look and feel of 
 [solarized code themes](https://ethanschoonover.com/solarized/) because of the research behind the color combinations 
 and how it would be perfect for my readers. Of course, being this mindful of the readers also meant I would be spending 
-a lot of time on custom theming in the template to make it work. 
+a lot of time on custom theming. 
 And this added more complexity to the decisions I eventually took! (will get to that later though)
 
-After spending some time with the hugo template (to give it a try) - cloning the template, runing the server, fidgeting with the code - I realized, I was trying to hit a dart board with an AK47. How's that? I didn't have sufficient understanding of
-hugo's workings on the core and that understanding its templating and configurations could take me days to build what I intended to. 
+After spending some time in selecting a hugo template from the huge library (to give it a try) - cloning the template, running the server, fidgeting with the code - I realized, I was trying to hit a dart board with an AK47. 
+How's that? I didn't have sufficient understanding of hugo's workings on the core and that understanding its templating and configurations could take me days to build what I intended to. 
 
 With a heavy heart I rejected hugo. Believe me, I still question myself on it - cheesy taglines can be very difficult to ignore.
 
@@ -39,7 +39,7 @@ With a heavy heart I rejected hugo. Believe me, I still question myself on it - 
 
 Okay, one less thing to worry about. Next, I only had to decide between Next.js and Remix. I browsed Remix's examples folder, cloned the blog
 starter and realized it was way too basic. Shoot, this meant I will have to integrate the whole hoopla for MDX, code highlighting, and tailwind myself. 
-It still sounded an attractive option because of the thoughts of adding more blog features in future which could fancy the Remix.run bells and whistles.
+It still sounded an attractive option because of the thoughts of adding more blog features in future which could fancy the Remix's bells and whistles.
 
 ### But wait! What's MDX and how would it fit into my gameplan? 
 
@@ -51,29 +51,29 @@ I quickly did a github search to see if anybody else created a blog with all the
 I was disappointed when I couldn't find any attractive option for Remix. It was hard to keep my hands off remix.run but i managed to
 convince myself that end goal is to write blogposts and not to lose my way in the tooling configuration.
 
-With heavy heart, I finally managed to discard remix.run for Next.js. I would love to try it out for some other project. 
+With heavy heart, I finally managed to discard remix.run for Next.js. I would love to try it out for some other project though. 
 Who knows I might port this blog in future 😉.
 
 ## Next stop, Next.js! - let's get it over with
 
 It must be easy and quick now since Next.js is the only option. Or so I thought! Basic blog starter template with typescript seemed like a good 
-option. It was a good starting point until i found it's missing the code highlighting setup! 
+option. It was a good starting point until i found it's missing the code highlighting setup. 
 No worries. Let's quickly check the web how to do it in 5 minutes. 
 
 Prism, highlight.js, enlighter.js, so many options like always. Which one to use 🤯? Which one is perfect and could allow me to customize the theme 
-with solarized dark colors?
+with solarized dark colors? 🤔
 
 ## Being reasonably unreasonable 
 
 Hold on! Learning a syntax highlighter and its API isn't the endgame. I needed to focus on the bigger picture and start writing 
 the blog. After all, it's not a tool learning fiesta. Life could become much easier if I could reuse something off the shelf. 
 
-A quick search of next.js blog templates on github gave me some really cool options. 
-Okay, but first I needed to come up with a shortlisting criteria i.e typescript, mdx, code highlighting and customization, tailwind css 
+A quick search of "next.js blog templates" on github gave me some really cool options. 
+Okay, but first I needed to come up with a shortlisting criteria i.e typescript, mdx, code highlighting and theme customization, tailwind css 
 and it would be major help if it's still somehow simple without unneeded features. 
 I thought these were reasonable expectations and I would totally find something. 
 
-In a perfect world, I could conjure up the template! But in the real world, something from my reasonable list was missing in every template. 
+In a perfect world, I could conjure up the template! But in the real world, every template was missing something from my reasonable list. 
 Either they had extra features which seemed hard to cleanup, a missing tool, or they simply had outdated dependencies which could take quite some time to update. 
 
 
@@ -100,10 +100,9 @@ A list of things that I am okay leaving for another day:
 1. I still don't understand how mdx, greymatter and mdx-prism, actually work in conjunction to generate html css out of mdx files.
 2. I am okay that I didn't get to use Remix or Hugo for this blog.
 3. I still need to review the code for this blog and improve any kinks. 
-4. I need to either fix the dark mode theme or remove the dangling darkmode classes which aren't being used. 
+4. I need to either fix the dark mode theme and add the feature or remove the dangling darkmode classes which aren't being used. 
 5. And there are a few more...
 
 PS The intention was to share the thought-process that worked(or not) for me and not writing a post bragging about how I created the coolest blog ever. 
-
 
 Go back [Home](/).
