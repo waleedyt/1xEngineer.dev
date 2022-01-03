@@ -80,11 +80,11 @@ Either they had extra features which seemed hard to cleanup, a missing tool, or 
 which could take quite some time to update. 
 
 
-Anyway, after trying out a few templates, I settled with [this one](https://github.com/ChangoMan/nextjs-typescript-mdx-blog.git). 
-This seemed the most reasonable since It resonated with my tech stack and wasn't much outdated. 
+Anyways, after trying out a few templates, I settled with [this one](https://github.com/ChangoMan/nextjs-typescript-mdx-blog.git) 
+since it resonated with my tech stack and the dependencies weren't too outdated either. 
 I would only have to update a few dependencies, remove the next-themes and date-fns package and clean up the code a tad. 
-These packages seemed unreasonable for my lean requirements. Tailwind on the other hand is a different story and seemed good enough on its own. 
-Above all, it had good code highlighting setup using mdx-prism and it included the css classes setup to explicitly override the 
+These packages seemed unreasonable for my lean requirements. Tailwind on the other hand is a different story and seemed pretty useful on its own. 
+Above all, it had good code highlighting setup using mdx-prism and it included the explicit setup of css classes to override the 
 styles for sepcific code elements.
 
 ## Let the games begin
@@ -92,17 +92,19 @@ styles for sepcific code elements.
 I rolled up my sleeves to fix the stuff and customize the theme. I quickly ran into some issues due to dependencies upgrade and I just 
 had to upgrade them once I knew newer versions are available 😢.
 
-Once I started thinking about how to map solarized color scheme to different blog elements, adapting to solarized theme seemed 
-like a daunting task. So I thought of looking it up on WWW again, and find something off the shelf to save my precious time. 
-After spending some time on WWW again, I knew customizing the stuff myself would be the sure-fire way to go about it!
-
-
-I had to try different color combinations from the palette to find out which ones work the best and which color should be used where. 
-Thankfully, I use solarized theme as my code theme day in day out and I also found a couple of sites using the solarized light theme 
-to help me out with mapping of the palette colors to different website elements.
+Once I started thinking about how to map solarized color scheme to different blog elements, adapting to the theme seemed 
+like a daunting task. I had to try different color combinations from the palette to find out which ones work the best and where. 
+I use solarized theme as my code editor theme day in day out so a little bit of instinct was helpful and, thankfully, 
+I also found a couple of sites using the solarized theme to help me further refine the mapping of the palette colors.
 
 After another weekend of procrastinating and fixing the UI, I had an initial version of blog ready. And finally, on a blessed Monday night 
 I started writing this blog post whilst worrying about the topic for next post!
+
+## Deployment
+I wasn't worried about deployments because I knew that something from Vercel, Netlify or Github pages 
+should easily work for my needs. In the end, it was a simple decision to go with Vercel because I was already using Next.js. 
+Deployment was very easy and the continuous deployment integration with the github repo worked out of the box. I loved the overall experience.
+Only complication that needed google search was to setup "A" and "CNAME" records for my domain name but that didn't have anything to do with Vercel.
 
 ## Imperfections I am okay living with
 A list of things that I am okay leaving for another day:
