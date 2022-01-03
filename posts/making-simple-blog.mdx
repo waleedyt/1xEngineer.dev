@@ -18,90 +18,100 @@ image: '/images/doors-choices.jpg'
 ## Remix or Next.js? Or Hugo, maybe? 🧐
 
 It's hard to acknowledge it in public but it took me an entire day to finalize the tools required to create this blog. 
-My initial thought was to use [remix.run](https://remix.run/) because of all the hype on Twitter. 
-But [Next.js](https://nextjs.org/) was also appealing because I am well acquainted with this framework already. 
-Finally, I wanted to make [hugo](https://gohugo.io/) work because I am fascinated by Golang and 
-not to mention hugo says it's the world's fastest 🥳.  
+My initial thought was to use [remix.run](https://remix.run/) because of all the hype on Twitter but [Next.js](https://nextjs.org/) 
+was also appealing because I am well acquainted with it already. Once I gave it some more thought, I wanted to make [hugo](https://gohugo.io/) 
+work because I am fascinated by Golang and not to mention hugo says it's the world's fastest 🥳.  
 
 
 During my test drive with different tools it occurred to me that I wanted my blog to have the look and feel of 
-[solarized code themes](https://ethanschoonover.com/solarized/) because of the research behind the color combinations 
-and how it would be perfect for my readers. Of course, being this mindful of the readers also meant I would be spending 
-a lot of time on custom theming. 
-And this added more complexity to the decisions I eventually took! (will get to that later though)
+[solarized code themes](https://ethanschoonover.com/solarized/). I love the research behind the color combinations it has 
+and how it would be perfect for techie readers. Of course, being this mindful of the readers also meant I would be spending 
+a lot of time on custom theming. And this certainly added more complexity to the decisions I eventually took! (will get to that later though)
 
-After spending some time in selecting a hugo template from the huge library (to give it a try) - cloning the template, running the server, fidgeting with the code - I realized, I was trying to hit a dart board with an AK47. 
-How's that? I didn't have sufficient understanding of hugo's workings on the core and that understanding its templating and configurations could take me days to build what I intended to. 
+Coming back to Hugo, I spent significant untracked time in selecting a template from the huge library (to give it a try). Next, I 
+cloned the template, ran the server, fidgeted with the code and realized, I was trying to hit a dart board with an AK47. 
+How's that? Hugo seemed pretty complex because of all the features for full blown websites and I didn't have sufficient 
+understanding of hugo's working. It's template workings and configurations could take me days to build what I intended to. 
 
-With a heavy heart I rejected hugo. Believe me, I still question myself on it - cheesy taglines can be very difficult to ignore.
+With a heavy heart I rejected hugo. Believe me, I still question myself on it - cheesy taglines can indeed be very difficult to ignore.
 
-## So, no Hugo! Sounds simple, but is it?
+## So, no Hugo! Sounds simple. Or, is it?
 
-Okay, one less thing to worry about. Next, I only had to decide between Next.js and Remix. I browsed Remix's examples folder, cloned the blog
-starter and realized it was way too basic. Shoot, this meant I will have to integrate the whole hoopla for MDX, code highlighting, and tailwind myself. 
-It still sounded an attractive option because of the thoughts of adding more blog features in future which could fancy the Remix's bells and whistles.
+Okay, one less thing to worry about. Next, I only had to decide between Remix.run and Next.js. I browsed Remix's examples folder, cloned the blog
+starter and realized it was pretty basic and intended for tutorial purposes. Shoot, this meant I will have to integrate the whole hoopla for MDX, 
+code highlighting, and tailwind myself. Remix still sounded an attractive option because of the thoughts of adding more blog features in future
+which could fancy the Remix's bells and whistles.
 
-### But wait! What's MDX and how would it fit into my gameplan? 
+### But wait! What's MDX and how did it fit into my gameplan? 
 
-Writing html css for each post seemed too much considering I planned on writing often ✌🏽 hence, writing in markdown seemed like an attractive option. 
-A quick research told me MDX is an advanced version of markdown and that it uses jsx tags which sounded useful and cool. 
+Writing html css for each post seemed too much considering I planned on writing often ✌🏽 so writing in markdown seemed like an attractive option. 
+A quick research told me MDX is an advanced version of markdown and that it can use jsx tags which sounded useful and cool being a React developer. 
 However, to use these, I would have to integrate mdx, some tool ending with *matter suffix to parse the frontmatter(sort of metadata and preface) stuff.
 
-I quickly did a github search to see if anybody else created a blog with all the bells and whistles that I could reuse. 
-I was disappointed when I couldn't find any attractive option for Remix. It was hard to keep my hands off remix.run but i managed to
-convince myself that end goal is to write blogposts and not to lose my way in the tooling configuration.
+Coming back to Remix, I quickly did a github search to see if anybody else created a blog having all the bells and whistles that I could reuse. 
+I couldn't find any attractive option for Remix since its fairly young and the ecosystem is still maturing. 
+It was hard to keep my hands off Remix.run but i managed to convince myself that end goal is to write blogposts and not to lose my way in the 
+tooling and configurations.
 
-With heavy heart, I finally managed to discard remix.run for Next.js. I would love to try it out for some other project though. 
+With heavy heart, I finally managed to discard remix.run for Next.js. I will definitely try Remix for some other project though. 
 Who knows I might port this blog in future 😉.
 
 ## Next stop, Next.js! - let's get it over with
 
-It must be easy and quick now since Next.js is the only option. Or so I thought! Basic blog starter template with typescript seemed like a good 
-option. It was a good starting point until i found it's missing the code highlighting setup. 
-No worries. Let's quickly check the web how to do it in 5 minutes. 
+It must be easy and quick now since Next.js is the only option. Or so I thought! I checked examples folder on Next.js github. 
+Basic blog starter template with typescript seemed like a good option. It was a good starting point until i found it's missing 
+the code highlighting setup. No worries. Let's quickly check the web how to do it in 5 minutes. 
 
-Prism, highlight.js, enlighter.js, so many options like always. Which one to use 🤯? Which one is perfect and could allow me to customize the theme 
-with solarized dark colors? 🤔
+Prism, highlight.js, enlighter.js, so many options like always. Which one to use 🤯? Which one is perfect and could allow me to 
+customize the theme with solarized dark colors? 🤔
 
 ## Being reasonably unreasonable 
 
 Hold on! Learning a syntax highlighter and its API isn't the endgame. I needed to focus on the bigger picture and start writing 
-the blog. After all, it's not a tool learning fiesta. Life could become much easier if I could reuse something off the shelf. 
+the blog. After all, it's not a tool learning fiesta. If I could reuse something off the shelf, life would become much easier. 
 
 A quick search of "next.js blog templates" on github gave me some really cool options. 
-Okay, but first I needed to come up with a shortlisting criteria i.e typescript, mdx, code highlighting and theme customization, tailwind css 
-and it would be major help if it's still somehow simple without unneeded features. 
+Okay, but first I needed to come up with a shortlisting criteria. A good start would be to identify the tooling i need i.e 
+typescript, mdx, code highlighting and theme customization, tailwind css and it would be major help if it's still somehow simple without unneeded features. 
 I thought these were reasonable expectations and I would totally find something. 
 
 In a perfect world, I could conjure up the template! But in the real world, every template was missing something from my reasonable list. 
-Either they had extra features which seemed hard to cleanup, a missing tool, or they simply had outdated dependencies which could take quite some time to update. 
+Either they had extra features which seemed hard to cleanup, a missing tool, or they simply had outdated dependencies 
+which could take quite some time to update. 
 
 
-Anyway, after trying out a few templates, I settled with [this one](https://github.com/ChangoMan/nextjs-typescript-mdx-blog.git). This seemed the most 
-reasonable. It resonated with all of my tech stack. I would only have to update the dependencies, clean up the code a tad and remove the 
-next-themes and date-fns package. These packages seemed unreasonable for my lean requirements. 
-Tailwind on the other hand is a different story and seemed good enough on its own.
+Anyway, after trying out a few templates, I settled with [this one](https://github.com/ChangoMan/nextjs-typescript-mdx-blog.git). 
+This seemed the most reasonable since It resonated with my tech stack and wasn't much outdated. 
+I would only have to update a few dependencies, remove the next-themes and date-fns package and clean up the code a tad. 
+These packages seemed unreasonable for my lean requirements. Tailwind on the other hand is a different story and seemed good enough on its own. 
+Above all, it had good code highligthing setup using mdx-prism and it included the css classes setup explicitly to override the 
+styles for sepcific code elements.
 
 ## Let the games begin
 
-I rolled up my sleeves, fixed the stuff and customized the theme. I realized it could take quite a while as I ran into some issues due to 
-dependencies upgrade. 
+I rolled up my sleeves to fix the stuff and customize the theme. I quickly ran into some issues due to dependencies upgrade and I just 
+had to upgrade them once I knew newer versions are available 😢.
 
-I'll be real honest here, adapting to solarized theme was a daunting task because of setting up colors and then not to mention
-code highlight theming. So I thought of looking it up on github again, and find something off the shelf to save my precious time. 
-
+Once I started thinking about how to map solarized color scheme to different blog elements, adapting to solarized theme seemed 
+like a daunting task. So I thought of looking it up on github again, and find something off the shelf to save my precious time. 
 After spending some time on WWW again, I knew customizing the stuff myself would be the sure-fire way to go about it!
+ 
+
+I had to try different color combinations from the palette to find out which ones work the best and which should be used where. 
+Thankfully, I use solarized theme as my code theme day in day out and I also found a couple of sites using the solarized light theme 
+to help me out with mapping of the palette colors to different website elements.
 
 After another weekend of procrastinating and fixing the UI, I had an initial version of blog ready. And finally, on a blessed Monday night 
 I started writing this blog post whilst worrying about the topic for next post!
 
 ## Imperfections I am okay living with
 A list of things that I am okay leaving for another day:
-1. I still don't understand how mdx, greymatter and mdx-prism, actually work in conjunction to generate html css out of mdx files.
-2. I am okay that I didn't get to use Remix or Hugo for this blog.
-3. I still need to review the code for this blog and improve any kinks. 
-4. I need to either fix the dark mode theme and add the feature or remove the dangling darkmode classes which aren't being used. 
-5. And there are a few more...
+1. I don't understand how mdx, greymatter and mdx-prism, actually work in conjunction to generate html css out of mdx files.
+2. I don't understand the power of mdx and where it will shine.
+3. I didn't get to use Remix or Hugo for this blog.
+4. I need to review the code for this blog and improve any kinks. 
+5. I need to either fix the dark mode theme and add the feature or remove the dangling darkmode classes which aren't being used. 
+6. And there are a few more...
 
 PS The intention was to share the thought-process that worked(or not) for me and not writing a post bragging about how I created the coolest blog ever. 
 
