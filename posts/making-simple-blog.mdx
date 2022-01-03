@@ -24,13 +24,13 @@ work because I am fascinated by Golang and not to mention hugo says it's the wor
 
 
 During my test drive with different tools it occurred to me that I wanted my blog to have the look and feel of 
-[solarized code themes](https://ethanschoonover.com/solarized/). I love the research behind the color combinations it has 
-and how it would be perfect for techie readers. Of course, being this mindful of the readers also meant I would be spending 
-a lot of time on custom theming. And this certainly added more complexity to the decisions I eventually took! (will get to that later though)
+[solarized code themes](https://ethanschoonover.com/solarized/). I love the research behind the color combinations it has. 
+Of course, being this mindful of the color combinations meant I would be spending a lot of time on custom theming. 
+And this certainly added more complexity to the decisions I eventually took! (will get to that later though)
 
-Coming back to Hugo, I spent significant untracked time in selecting a template from the huge library (to give it a try). Next, I 
-cloned the template, ran the server, fidgeted with the code and realized, I was trying to hit a dart board with an AK47. 
-How's that? Hugo seemed pretty complex because of all the features for full blown websites and I didn't have sufficient 
+Coming back to Hugo, I spent significant untracked time in selecting a perfect template from the huge library (just to give it a try 😅). 
+Next, I cloned the template, ran the server, fidgeted with the code and realized, I was trying to hit a dart board with an AK47 😂. 
+How's that? Hugo seemed pretty complex because of all the features it had for full blown websites and I didn't have sufficient 
 understanding of hugo's working. It's template workings and configurations could take me days to build what I intended to. 
 
 With a heavy heart I rejected hugo. Believe me, I still question myself on it - cheesy taglines can indeed be very difficult to ignore.
@@ -72,8 +72,8 @@ the blog. After all, it's not a tool learning fiesta. If I could reuse something
 
 A quick search of "next.js blog templates" on github gave me some really cool options. 
 Okay, but first I needed to come up with a shortlisting criteria. A good start would be to identify the tooling i need i.e 
-typescript, mdx, code highlighting and theme customization, tailwind css and it would be major help if it's still somehow simple without unneeded features. 
-I thought these were reasonable expectations and I would totally find something. 
+typescript, mdx, code highlighting and theme customization, tailwind css. Moreover, it would be major help if it's still 
+somehow simple without the features I don't need. I thought these were reasonable expectations and I would totally find something. 
 
 In a perfect world, I could conjure up the template! But in the real world, every template was missing something from my reasonable list. 
 Either they had extra features which seemed hard to cleanup, a missing tool, or they simply had outdated dependencies 
@@ -84,7 +84,7 @@ Anyway, after trying out a few templates, I settled with [this one](https://gith
 This seemed the most reasonable since It resonated with my tech stack and wasn't much outdated. 
 I would only have to update a few dependencies, remove the next-themes and date-fns package and clean up the code a tad. 
 These packages seemed unreasonable for my lean requirements. Tailwind on the other hand is a different story and seemed good enough on its own. 
-Above all, it had good code highligthing setup using mdx-prism and it included the css classes setup explicitly to override the 
+Above all, it had good code highlighting setup using mdx-prism and it included the css classes setup to explicitly override the 
 styles for sepcific code elements.
 
 ## Let the games begin
@@ -93,11 +93,11 @@ I rolled up my sleeves to fix the stuff and customize the theme. I quickly ran i
 had to upgrade them once I knew newer versions are available 😢.
 
 Once I started thinking about how to map solarized color scheme to different blog elements, adapting to solarized theme seemed 
-like a daunting task. So I thought of looking it up on github again, and find something off the shelf to save my precious time. 
+like a daunting task. So I thought of looking it up on WWW again, and find something off the shelf to save my precious time. 
 After spending some time on WWW again, I knew customizing the stuff myself would be the sure-fire way to go about it!
- 
 
-I had to try different color combinations from the palette to find out which ones work the best and which should be used where. 
+
+I had to try different color combinations from the palette to find out which ones work the best and which color should be used where. 
 Thankfully, I use solarized theme as my code theme day in day out and I also found a couple of sites using the solarized light theme 
 to help me out with mapping of the palette colors to different website elements.
 
