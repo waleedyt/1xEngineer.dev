@@ -16,7 +16,7 @@ export const About = (): JSX.Element => {
       </p>
       <h3>What do I love to do in my free time?</h3>
       <p>
-        I live in Islambad, Pakistan - a peaceful city along the foothills of Margallah mountains.
+        I live in Islamabad, Pakistan - a peaceful city along the foothills of Margallah mountains.
         On weekends, you will find me hiking in the Margallah trails ⛰. I am fond of watching thriller shows and movies on Netflix 📺.
         I have been a techie for as long as I can remember so often I use spare time to learn more about tech and improve my skills.
       </p>
@@ -36,11 +36,11 @@ export const About = (): JSX.Element => {
       </p>
       <p>
         Unmoderated consumption of such content can boost fear of missing out, fatigue and imposter syndrome in engineers and
-        I have sufferred from this, a lot 😱.
+        I have suffered from this, a lot 😱.
       </p>
       <p>
         This blog is my self-therapy to cut off the content consumption, focus more on being original, spend more quality time thinking,
-        and creating content that is real. This doesn&nbsp;t mean I am going to shut the drapes on the world, instead I will focus on
+        and creating content that is real. This doesn&apos;t mean I am going to shut the drapes on the world, instead I will focus on
         original media such as books and a few original blogs so that it is easier to curate, consume better quality content, and
         most importantly, sleep better.
       </p>
