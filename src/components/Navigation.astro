@@ -39,7 +39,9 @@ const { isHome = false } = Astro.props;
     font-size: 1.5rem;
     line-height: 1.2;
     font-weight: 600;
-    color: var(--color-heading);
+    /* Brand mark keeps Solarized magenta, as on the old site
+       (4.21:1 light / 3.30:1 dark — large-text AA pass) */
+    color: var(--color-magenta);
     text-decoration: none;
   }
   .site-name a {

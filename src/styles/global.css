@@ -31,7 +31,9 @@
   --color-fg: var(--color-base01);
   /* Headings are WCAG "large text" (>=18.66px bold), so the AA bar is 3:1,
      not 4.5:1 — the Solarized accents are fine here. */
-  --color-heading: var(--color-magenta); /* 4.21:1 on base3 — large-text AA pass */
+  /* Post/page titles were green h2s on the old site (magenta was only the
+     site-name brand mark, handled in Navigation.astro) */
+  --color-heading: var(--color-green-deep);
   --color-accent: var(--color-green-deep);
   /* #859900 is 2.97:1 on base3, a hair under the 3:1 large-text bar;
      #7d8f00 keeps the Solarized green look at 3.36:1 */
@@ -46,8 +48,8 @@
 .dark {
   --color-bg: var(--color-base03);
   --color-fg: var(--color-base1);
-  --color-heading: var(--color-magenta); /* 3.30:1 on base03 — large-text AA pass */
-  --color-accent: var(--color-green); /* 4.69:1 on base03 */
+  --color-heading: var(--color-green); /* 4.69:1 on base03 */
+  --color-accent: var(--color-green);
   --color-link: var(--color-base0);
   /* base1 (5.61:1) — violet #6c71c4 only reaches 3.43:1 and fails AA for body links */
   --color-link-hover: var(--color-base1);
