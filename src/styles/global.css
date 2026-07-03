@@ -28,21 +28,25 @@
   --color-bg: var(--color-base3);
   --color-fg: var(--color-base01);
   --color-heading: var(--color-magenta);
-  --color-accent: var(--color-green);
+  /* base01 (4.99:1 on base3) — green #859900 only reaches 2.97:1 and fails AA */
+  --color-accent: var(--color-base01);
   --color-link: var(--color-base02);
-  --color-link-hover: var(--color-violet);
+  /* base01 (4.99:1) — violet #6c71c4 only reaches 4.06:1 and fails AA for body links */
+  --color-link-hover: var(--color-base01);
   --color-muted: var(--color-base00);
   --color-border: var(--color-base2);
 }
 
-/* Semantic tokens — Solarized Dark (symmetric swap; accents unchanged) */
+/* Semantic tokens — Solarized Dark (symmetric swap) */
 .dark {
   --color-bg: var(--color-base03);
   --color-fg: var(--color-base1);
   --color-heading: var(--color-magenta);
+  /* green #859900 reaches 4.69:1 on base03 — AA-pass for large heading text */
   --color-accent: var(--color-green);
   --color-link: var(--color-base0);
-  --color-link-hover: var(--color-violet);
+  /* base1 (5.61:1) — violet #6c71c4 only reaches 3.43:1 and fails AA for body links */
+  --color-link-hover: var(--color-base1);
   --color-muted: var(--color-base0);
   --color-border: var(--color-base02);
 }

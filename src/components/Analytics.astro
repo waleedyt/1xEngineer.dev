@@ -1,16 +1,24 @@
 ---
 // GoatCounter analytics — zero-prop component
-// MANUAL STEP REQUIRED:
+// The script only renders when a real GoatCounter site code is configured
+// via the PUBLIC_GOATCOUNTER_CODE environment variable, so no placeholder
+// is ever shipped to production.
+//
+// MANUAL STEP REQUIRED to enable analytics:
 //   1. Sign up for a free account at https://www.goatcounter.com
-//   2. Replace YOURCODE below with your GoatCounter site code
+//   2. Set PUBLIC_GOATCOUNTER_CODE to your GoatCounter site code
 //      (the subdomain you chose during signup, e.g. "1xengineer")
-//   Example: data-goatcounter="https://1xengineer.goatcounter.com/count"
+//      e.g. in a .env file: PUBLIC_GOATCOUNTER_CODE=1xengineer
+const code = import.meta.env.PUBLIC_GOATCOUNTER_CODE;
 ---
 
-<!-- TODO: replace YOURCODE with your GoatCounter site code after signing up at goatcounter.com -->
-<script
-  is:inline
-  data-goatcounter="https://YOURCODE.goatcounter.com/count"
-  async
-  src="//gc.zgo.at/count.js"
-></script>
+{
+  code && (
+    <script
+      is:inline
+      data-goatcounter={`https://${code}.goatcounter.com/count`}
+      async
+      src="//gc.zgo.at/count.js"
+    />
+  )
+}
