@@ -30,6 +30,27 @@ const dateFormatter = new Intl.DateTimeFormat('en', {
 
 // Absolute URL of the processed hero image for OG.
 const ogImage = new URL(post.data.image.src, Astro.site).href;
+
+const canonicalURL = new URL(`/posts/${post.id}/`, Astro.site).href;
+
+// Structured data for rich results and AI crawlers. Build-time,
+// author-controlled content only — safe for set:html.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  image: [ogImage],
+  datePublished: post.data.date.toISOString(),
+  url: canonicalURL,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalURL },
+  author: {
+    '@type': 'Person',
+    name: 'Ahmed Waleed',
+    url: new URL('/about/', Astro.site).href,
+    sameAs: ['https://twitter.com/_waleed_yt'],
+  },
+};
 ---
 
 <BaseLayout
@@ -39,6 +60,11 @@ const ogImage = new URL(post.data.image.src, Astro.site).href;
   type="article"
   date={post.data.date}
 >
+  <script
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(jsonLd)}
+  />
   <article>
     <header>
       <h1 class="post-title">{post.data.title}</h1>
