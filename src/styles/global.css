@@ -63,6 +63,36 @@ body {
 }
 
 /* Base typography feel ported from old globals.css */
+/* Heading scale: Tailwind preflight resets headings to font-size: inherit,
+   so headings outside .prose need explicit sizes (old site used
+   text-3xl/text-2xl semibold in @layer base). Inside .prose the typography
+   plugin's higher-specificity rules still win. */
+@layer base {
+  h1 {
+    font-size: 1.875rem;
+    line-height: 1.25;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+    line-height: 1.33;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  h4 {
+    font-size: 1.125rem;
+    line-height: 1.5;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+}
 h1 {
   color: var(--color-heading);
 }
