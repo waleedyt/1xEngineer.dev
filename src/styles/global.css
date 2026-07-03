@@ -1,0 +1,192 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Solarized palette as design tokens */
+@theme {
+  --color-base03: #002b36;
+  --color-base02: #073642;
+  --color-base01: #586e75;
+  --color-base00: #657b83;
+  --color-base0: #839496;
+  --color-base1: #93a1a1;
+  --color-base2: #eee8d5;
+  --color-base3: #fdf6e3;
+  --color-yellow: #b58900;
+  --color-orange: #cb4b16;
+  --color-red: #dc322f;
+  --color-magenta: #d33682;
+  --color-violet: #6c71c4;
+  --color-blue: #268bd2;
+  --color-cyan: #2aa198;
+  --color-green: #859900;
+  /* Solarized green deepened slightly for AA large-text contrast on base3 */
+  --color-green-deep: #7d8f00;
+}
+
+/* Semantic tokens — Solarized Light */
+:root {
+  --color-bg: var(--color-base3);
+  --color-fg: var(--color-base01);
+  /* Headings are WCAG "large text" (>=18.66px bold), so the AA bar is 3:1,
+     not 4.5:1 — the Solarized accents are fine here. */
+  /* Post/page titles were green h2s on the old site (magenta was only the
+     site-name brand mark, handled in Navigation.astro) */
+  --color-heading: var(--color-green-deep);
+  --color-accent: var(--color-green-deep);
+  /* #859900 is 2.97:1 on base3, a hair under the 3:1 large-text bar;
+     #7d8f00 keeps the Solarized green look at 3.36:1 */
+  --color-link: var(--color-base02);
+  /* base01 (4.99:1) — violet #6c71c4 only reaches 4.06:1 and fails AA for body links */
+  --color-link-hover: var(--color-base01);
+  --color-muted: var(--color-base00);
+  --color-border: var(--color-base2);
+}
+
+/* Semantic tokens — Solarized Dark (symmetric swap) */
+.dark {
+  --color-bg: var(--color-base03);
+  --color-fg: var(--color-base1);
+  --color-heading: var(--color-green); /* 4.69:1 on base03 */
+  --color-accent: var(--color-green);
+  --color-link: var(--color-base0);
+  /* base1 (5.61:1) — violet #6c71c4 only reaches 3.43:1 and fails AA for body links */
+  --color-link-hover: var(--color-base1);
+  --color-muted: var(--color-base0);
+  --color-border: var(--color-base02);
+}
+
+html {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+}
+
+/* Base typography feel ported from old globals.css */
+/* Heading scale: Tailwind preflight resets headings to font-size: inherit,
+   so headings outside .prose need explicit sizes (old site used
+   text-3xl/text-2xl semibold in @layer base). Inside .prose the typography
+   plugin's higher-specificity rules still win. */
+@layer base {
+  h1 {
+    font-size: 1.875rem;
+    line-height: 1.25;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+    line-height: 1.33;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  h4 {
+    font-size: 1.125rem;
+    line-height: 1.5;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+}
+h1 {
+  color: var(--color-heading);
+}
+h2,
+h3,
+h4 {
+  color: var(--color-accent);
+}
+a {
+  color: var(--color-link);
+  transition: color 0.15s ease;
+}
+a:hover {
+  color: var(--color-link-hover);
+}
+
+/* Prose wrapper themed via semantic tokens for both modes */
+.prose {
+  --tw-prose-body: var(--color-fg);
+  --tw-prose-headings: var(--color-accent);
+  --tw-prose-links: var(--color-link);
+  --tw-prose-bold: var(--color-fg);
+  --tw-prose-counters: var(--color-muted);
+  --tw-prose-bullets: var(--color-muted);
+  --tw-prose-hr: var(--color-border);
+  --tw-prose-quotes: var(--color-fg);
+  --tw-prose-quote-borders: var(--color-border);
+  --tw-prose-captions: var(--color-muted);
+  --tw-prose-code: var(--color-fg);
+  --tw-prose-th-borders: var(--color-border);
+  --tw-prose-td-borders: var(--color-border);
+  color: var(--color-fg);
+  max-width: none;
+}
+
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: var(--color-accent);
+  scroll-margin-top: 8rem;
+}
+
+.prose a {
+  color: var(--color-link);
+  text-decoration: underline;
+}
+.prose a:hover {
+  color: var(--color-link-hover);
+}
+
+.prose img {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0.375rem;
+}
+
+/* Inline code */
+.prose :not(pre) > code {
+  color: var(--color-fg);
+  background-color: var(--color-border);
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+.prose :not(pre) > code::before,
+.prose :not(pre) > code::after {
+  content: none;
+}
+
+/* Shiki dual-theme: light theme is default; swap to dark vars under .dark */
+.astro-code {
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+}
+.dark .astro-code,
+.dark .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+/* Hide code block scrollbars (ported) */
+.astro-code::-webkit-scrollbar {
+  display: none;
+}
+.astro-code {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

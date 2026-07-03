@@ -1,0 +1,18 @@
+---
+// GoatCounter analytics — zero-prop component
+// The site code is the goatcounter.com subdomain (public by design — it
+// ships in the page HTML). Override via PUBLIC_GOATCOUNTER_CODE, or set it
+// to an empty string to disable the script entirely.
+const code = import.meta.env.PUBLIC_GOATCOUNTER_CODE ?? '1xengineer';
+---
+
+{
+  code && (
+    <script
+      is:inline
+      data-goatcounter={`https://${code}.goatcounter.com/count`}
+      async
+      src="//gc.zgo.at/count.js"
+    />
+  )
+}

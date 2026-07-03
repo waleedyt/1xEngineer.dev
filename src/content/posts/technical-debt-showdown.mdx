@@ -1,0 +1,85 @@
+---
+title: Dev Shop Engineer's Showdown with Technical Debt
+description: Reminisces of a Software Engineering Contractor on various ways to deal with the technical debt and 
+  client expectations.
+date: '2022-01-16'
+image: '../../assets/images/chess.jpg'
+imageAlt: 'Close-up of wooden chess pieces mid-game on a classic board'
+---
+
+Life is tough being a software engineering contractor, especially if you are contracted from a developing country as a part of cheaper outsource program. 
+You have to work against the psychology of people seeing you as "you get what you pay for". It is not easy to break away from these perceptions and 
+shackles to prove the worth and that you stand as much chance as an engineer from the valley. 
+Different work environments and models pose different challenges with respect to client engagement. However, managing technical debt 
+along with the development work of features you got hired to build remains one of the primary challenges we all face. 
+
+## Situations world can and will throw at you
+1. Customer's managers aren't code contributing engineers. How to communicate and negotiate the-non feature work?
+2. Customer's managers and engineers have different expectations from you i.e. iteration speed vs quality.
+3. Customer's engineers aren't able to identify the debt.
+4. You were one of the project kickstarters, how do you communicate technical debt without implying that 
+you did a bad job in the first place?
+5. Customer wants something done quicker but doing it quicker might be you making the wrong architectural decision 
+which will slow you down for the followup features. 
+6. Requirements changed and the old architectural decisions you took are proving to be shackles. Impact includes 
+bugs and unproductive codebase.
+
+## Never back down
+Different managers and engineers will respond to these scenarios in different ways and ofcourse it also depends 
+on the client stakeholders as well. However, it’s important to be well-prepared to negotiate and 
+justify your reasons. Ignoring the technical debt or resorting to the wishes of the customer’s authorities 
+without giving it a fight and ultimately grinding yourself or the team is an easy recipe of disaster. 
+This approach can have detrimental long-term effects, for instance, talent retention issues or losing the 
+customer altogether! 
+
+## Know the game 
+It is important to know how to identify technical debt. Doing so makes it easier to find certain attributes which can later be 
+used for negotiations and setting customer expectations. Here is how I identify it in different categories with help of a few questions:
+1. Is my tech debt the result of requirements change? For instance, developing feature Y needs a refactor to an underlying feature X! 
+Usually, this type is foreseen while planning and your strategy dictates if it converts in to debt.
+2. Did I take a wrong architectural decision or may be I’ve let the debt to accumulate and now this part of codebase has 
+become complex and unproductive?
+3. Is my tech debt resultant of a pattern I used over time and it’s just that now I have figured a better way? 
+4. Is my tech debt resulting from a 3rd party dependency? I.e. package deprecating or an upgrade with better APIs.
+
+## Planning the move
+1. If I have to refactor to accommodate new requirements, I consider this work as part of the new feature implementation. 
+Requirements change all the time, hence, refactoring around the newly discovered constraints and facts is considered a healthy practice. 
+Accepting this will also save you from premature optimizations and abstractions. And most importantly, acknowledging such work 
+as a dependency of new feature will make it easier to communicate it as the requirement for that deliverable. 
+2. If the debt is due to my mistake, it’s okay because this is how I learn and gain experience. However, it’s my 
+responsibility to fix the mess. Some datapoints to help with the negotiations are, number of bugs found in that area and 
+amount of time it takes to fix them, development time being put in each sprint or month to face the repercussions, how spending 
+XX hours to fix it would save x hours each sprint, and the investment would break even in x sprints. Painting a good picture 
+and the long-term benefits will ensure that customer starts seeing the positive side.
+3. If I have found a better code pattern to an existing one, I would start using the pattern in any new development. 
+We don’t need to refactor 10s or 100s of old pattern usages yet because there is no issue with old pattern. I can start migrating 
+the old patterns with any forced refactors or new requirement changes that come my way - they always do. 
+4. If my tech debt is resulting from a third-party dependency then it can be a security risk which should be planned 
+for as soon as possible. However, if it’s not a critical upgrade, it can be coupled with bigger dependent feature deliverables 
+to minimize the testing effort.
+
+## Preparing for the Great War!
+Software projects can usually be categorized in two phases; the prototyping phase where you have to quickly try different 
+ideas to get customer feedback and shape up an MVP and then the second phase focuses to stabilize or develop the product further 
+to expand the customer base. It is important to know the current phase of the project, because this will help you realize what kind of technical 
+debt is worth the investment. 
+In the first phase, experimentation and iteration speed is really important. You may have to make conscious choices 
+to cut the corners which is fine as long as you realize what you have to do once it’s moving to the 
+second phase. However, it’s important to be aware that project has now entered in the second phase so that process, mindset, 
+practices can adapt as well.     
+Adapting the sales-pitch to the target audience managers vs. engineers vs. c-level executives, is extremely important as well. 
+In order to find the middle ground, you need to be aware what is important to the stakeholders currently and how much 
+of it would they sacrifice for future benefits. Sometimes, you will find very supportive stakeholders who will easily be on board 
+with the reasonable proposals. And sometimes, they will give you a very tough time because they aren’t equipped to understand 
+what you are trying to say. However the situation, be ready to put in work and come up with good answers supported by numbers 
+which can make your point look concrete.
+
+## There is no opposition!
+I have spent almost five years working at a dev shop. I have heard and witnessed a lot of case studies. 
+I have also had some tough experiences first hand as where I had to grit because we couldn’t plan and execute negotiations well. 
+I have also worked with the perfect technical stakeholders one could ask for. I am pretty sure there are many more scenarios which 
+I am yet to experience and learn from. The most important realization from all these experiences was that there is no one right 
+way of dealing with the situations. Every stakeholder is ultimately a person and you won’t reach very far if you ignore that fact. 
+Being human can win you at places where best supported arguments can’t.
+

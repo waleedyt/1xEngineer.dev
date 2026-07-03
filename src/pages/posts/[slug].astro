@@ -1,0 +1,128 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Giscus from '../../components/Giscus.astro';
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('posts')).sort(
+    (a, b) => a.data.date.valueOf() - b.data.date.valueOf()
+  );
+
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: {
+      post,
+      prev: i > 0 ? posts[i - 1] : null,
+      next: i < posts.length - 1 ? posts[i + 1] : null,
+    },
+  }));
+}
+
+const { post, prev, next } = Astro.props;
+const { Content } = await render(post);
+
+const dateFormatter = new Intl.DateTimeFormat('en', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+// Absolute URL of the processed hero image for OG.
+const ogImage = new URL(post.data.image.src, Astro.site).href;
+---
+
+<BaseLayout
+  title={`${post.data.title} - Ahmed Waleed`}
+  description={post.data.description}
+  ogImage={ogImage}
+  type="article"
+  date={post.data.date}
+>
+  <article>
+    <header>
+      <h1 class="post-title">{post.data.title}</h1>
+      <p class="post-date">{dateFormatter.format(post.data.date)}</p>
+    </header>
+
+    <Image
+      src={post.data.image}
+      alt={post.data.imageAlt}
+      class="hero"
+      widths={[400, 800, 1200]}
+      sizes="(max-width: 64rem) 100vw, 64rem"
+    />
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <nav class="post-nav">
+      {
+        prev ? (
+          <a href={`/posts/${prev.id}/`} class="nav-prev">
+            <span class="nav-label">← Previous</span>
+            <span class="nav-title">{prev.data.title}</span>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        next ? (
+          <a href={`/posts/${next.id}/`} class="nav-next">
+            <span class="nav-label">Next →</span>
+            <span class="nav-title">{next.data.title}</span>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+    </nav>
+
+    <Giscus />
+  </article>
+</BaseLayout>
+
+<style>
+  .post-title {
+    margin-bottom: 0.5rem;
+  }
+  .post-date {
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+  }
+  .hero {
+    width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  .post-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-block: 3rem 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .post-nav a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-width: 45%;
+    text-decoration: none;
+  }
+  .nav-next {
+    text-align: right;
+    margin-left: auto;
+  }
+  .nav-label {
+    font-size: 0.8rem;
+    color: var(--color-muted);
+  }
+  .nav-title {
+    font-weight: 600;
+  }
+</style>

@@ -1,0 +1,66 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const dateFormatter = new Intl.DateTimeFormat('en', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout isHome={true}>
+  {
+    posts.map((post) => (
+      <article class="post-item">
+        <header class="post-header">
+          <a href={`/posts/${post.id}/`} class="post-title-link">
+            <h2 class="post-title">{post.data.title}</h2>
+          </a>
+          <p class="post-date">{dateFormatter.format(post.data.date)}</p>
+        </header>
+        <p class="post-desc">{post.data.description}</p>
+        <a href={`/posts/${post.id}/`}>Read More</a>
+      </article>
+    ))
+  }
+</BaseLayout>
+
+<style>
+  .post-item {
+    padding-block: 1rem;
+  }
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .post-title-link {
+    text-decoration: none;
+  }
+  .post-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  .post-title-link:hover .post-title {
+    color: var(--color-link-hover);
+  }
+  .post-date {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+  .post-desc {
+    margin-block: 0.5rem;
+    color: var(--color-fg);
+  }
+</style>
