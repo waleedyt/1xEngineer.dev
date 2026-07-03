@@ -1,0 +1,65 @@
+---
+// Giscus comments component
+// Real config fetched from GitHub API on 2026-07-04:
+//   Repo:     waleedyt/1xEngineer.dev
+//   Repo ID:  R_kgDOGnQJpw
+//   Category: Announcements (only maintainers can create — giscus-recommended)
+//   Cat ID:   DIC_kwDOGnQJp84DAcu5
+//
+// MANUAL STEP REQUIRED before comments appear:
+//   Install the Giscus GitHub App on waleedyt/1xEngineer.dev at:
+//   https://github.com/apps/giscus
+//   (Grant access to this specific repository.)
+---
+
+<section class="giscus-section">
+  <h2>Comments</h2>
+  <div class="giscus"></div>
+</section>
+
+<script is:inline>
+  (function () {
+    // Determine initial theme before the giscus script loads
+    var isDark = document.documentElement.classList.contains('dark');
+    var initialTheme = isDark ? 'dark' : 'light';
+
+    // Build and insert the giscus script tag dynamically so we can set
+    // data-theme synchronously before the script executes
+    var script = document.createElement('script');
+    script.src = 'https://giscus.app/client.js';
+    script.setAttribute('data-repo', 'waleedyt/1xEngineer.dev');
+    script.setAttribute('data-repo-id', 'R_kgDOGnQJpw');
+    script.setAttribute('data-category', 'Announcements');
+    script.setAttribute('data-category-id', 'DIC_kwDOGnQJp84DAcu5');
+    script.setAttribute('data-mapping', 'pathname');
+    script.setAttribute('data-strict', '0');
+    script.setAttribute('data-reactions-enabled', '1');
+    script.setAttribute('data-emit-metadata', '0');
+    script.setAttribute('data-input-position', 'top');
+    script.setAttribute('data-lang', 'en');
+    script.setAttribute('data-loading', 'lazy');
+    script.setAttribute('data-theme', initialTheme);
+    script.crossOrigin = 'anonymous';
+    script.async = true;
+
+    var container = document.querySelector('.giscus');
+    if (container) {
+      container.appendChild(script);
+    }
+
+    // Listen for theme-change events dispatched by the theme toggle
+    // and forward them to the giscus iframe via postMessage
+    document.addEventListener('theme-change', function (event) {
+      var theme = event.detail && event.detail.theme;
+      if (!theme) return;
+
+      var iframe = document.querySelector('iframe.giscus-frame');
+      if (iframe) {
+        iframe.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: theme } } },
+          'https://giscus.app'
+        );
+      }
+    });
+  })();
+</script>

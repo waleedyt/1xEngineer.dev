@@ -1,0 +1,152 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Solarized palette as design tokens */
+@theme {
+  --color-base03: #002b36;
+  --color-base02: #073642;
+  --color-base01: #586e75;
+  --color-base00: #657b83;
+  --color-base0: #839496;
+  --color-base1: #93a1a1;
+  --color-base2: #eee8d5;
+  --color-base3: #fdf6e3;
+  --color-yellow: #b58900;
+  --color-orange: #cb4b16;
+  --color-red: #dc322f;
+  --color-magenta: #d33682;
+  --color-violet: #6c71c4;
+  --color-blue: #268bd2;
+  --color-cyan: #2aa198;
+  --color-green: #859900;
+}
+
+/* Semantic tokens — Solarized Light */
+:root {
+  --color-bg: var(--color-base3);
+  --color-fg: var(--color-base01);
+  --color-heading: var(--color-magenta);
+  --color-accent: var(--color-green);
+  --color-link: var(--color-base02);
+  --color-link-hover: var(--color-violet);
+  --color-muted: var(--color-base00);
+  --color-border: var(--color-base2);
+}
+
+/* Semantic tokens — Solarized Dark (symmetric swap; accents unchanged) */
+.dark {
+  --color-bg: var(--color-base03);
+  --color-fg: var(--color-base1);
+  --color-heading: var(--color-magenta);
+  --color-accent: var(--color-green);
+  --color-link: var(--color-base0);
+  --color-link-hover: var(--color-violet);
+  --color-muted: var(--color-base0);
+  --color-border: var(--color-base02);
+}
+
+html {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+}
+
+/* Base typography feel ported from old globals.css */
+h1 {
+  color: var(--color-heading);
+}
+h2,
+h3,
+h4 {
+  color: var(--color-accent);
+}
+a {
+  color: var(--color-link);
+  transition: color 0.15s ease;
+}
+a:hover {
+  color: var(--color-link-hover);
+}
+
+/* Prose wrapper themed via semantic tokens for both modes */
+.prose {
+  --tw-prose-body: var(--color-fg);
+  --tw-prose-headings: var(--color-accent);
+  --tw-prose-links: var(--color-link);
+  --tw-prose-bold: var(--color-fg);
+  --tw-prose-counters: var(--color-muted);
+  --tw-prose-bullets: var(--color-muted);
+  --tw-prose-hr: var(--color-border);
+  --tw-prose-quotes: var(--color-fg);
+  --tw-prose-quote-borders: var(--color-border);
+  --tw-prose-captions: var(--color-muted);
+  --tw-prose-code: var(--color-fg);
+  --tw-prose-th-borders: var(--color-border);
+  --tw-prose-td-borders: var(--color-border);
+  color: var(--color-fg);
+  max-width: none;
+}
+
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: var(--color-accent);
+  scroll-margin-top: 8rem;
+}
+
+.prose a {
+  color: var(--color-link);
+  text-decoration: underline;
+}
+.prose a:hover {
+  color: var(--color-link-hover);
+}
+
+.prose img {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0.375rem;
+}
+
+/* Inline code */
+.prose :not(pre) > code {
+  color: var(--color-fg);
+  background-color: var(--color-border);
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+.prose :not(pre) > code::before,
+.prose :not(pre) > code::after {
+  content: none;
+}
+
+/* Shiki dual-theme: light theme is default; swap to dark vars under .dark */
+.astro-code {
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+}
+.dark .astro-code,
+.dark .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+/* Hide code block scrollbars (ported) */
+.astro-code::-webkit-scrollbar {
+  display: none;
+}
+.astro-code {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

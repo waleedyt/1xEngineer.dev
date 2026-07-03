@@ -1,0 +1,135 @@
+---
+import '../styles/global.css';
+import Navigation from '../components/Navigation.astro';
+import Analytics from '../components/Analytics.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  type?: string;
+  date?: Date;
+  isHome?: boolean;
+}
+
+const DEFAULT_TITLE = '1xEngineer';
+const DEFAULT_DESCRIPTION =
+  'A Software Engineer working in JavaScript Ecosystem; Exploring the mesh of people and engineering';
+
+const {
+  title = DEFAULT_TITLE,
+  description = DEFAULT_DESCRIPTION,
+  ogImage,
+  type = 'website',
+  date,
+  isHome = false,
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site).href;
+const resolvedImage =
+  ogImage ?? new URL('/images/doors-choices.jpg', Astro.site).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- No-flash: set dark class before any paint -->
+    <script is:inline>
+      (() => {
+        try {
+          const stored = localStorage.getItem('theme');
+          const prefersDark = window.matchMedia(
+            '(prefers-color-scheme: dark)'
+          ).matches;
+          if (stored === 'dark' || (!stored && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph -->
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content="1xEngineer.dev" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={resolvedImage} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@_waleed_yt" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={resolvedImage} />
+
+    {
+      date && (
+        <meta
+          property="article:published_time"
+          content={date.toISOString()}
+        />
+      )
+    }
+
+    <Analytics />
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div class="container header-inner">
+          <Navigation isHome={isHome} />
+        </div>
+      </header>
+      <main class="flex-grow">
+        <div class="container">
+          <slot />
+        </div>
+      </main>
+      <footer>
+        <div class="container footer-inner">
+          Built by{' '}
+          <a href="https://twitter.com/_waleed_yt">Waleed</a>
+        </div>
+      </footer>
+    </div>
+
+    <style>
+      .page {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .flex-grow {
+        flex: 1 0 auto;
+      }
+      .container {
+        max-width: 64rem;
+        margin-inline: auto;
+        padding-inline: 2rem;
+      }
+      .header-inner {
+        padding-block: 2rem;
+      }
+      .footer-inner {
+        padding-block: 2rem;
+        color: var(--color-muted);
+      }
+      .footer-inner a {
+        color: var(--color-link);
+      }
+      .footer-inner a:hover {
+        color: var(--color-link-hover);
+      }
+    </style>
+  </body>
+</html>
