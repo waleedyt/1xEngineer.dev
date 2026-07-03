@@ -27,9 +27,10 @@
 :root {
   --color-bg: var(--color-base3);
   --color-fg: var(--color-base01);
-  --color-heading: var(--color-magenta);
-  /* base01 (4.99:1 on base3) — green #859900 only reaches 2.97:1 and fails AA */
+  --color-heading: var(--color-base01);
+  /* base01 (4.99:1 on base3) — magenta #d33682 only reaches 4.21:1 and fails normal-text AA */
   --color-accent: var(--color-base01);
+  /* base01 (4.99:1 on base3) — green #859900 only reaches 2.97:1 and fails AA */
   --color-link: var(--color-base02);
   /* base01 (4.99:1) — violet #6c71c4 only reaches 4.06:1 and fails AA for body links */
   --color-link-hover: var(--color-base01);
@@ -41,8 +42,8 @@
 .dark {
   --color-bg: var(--color-base03);
   --color-fg: var(--color-base1);
-  --color-heading: var(--color-magenta);
-  /* green #859900 reaches 4.69:1 on base03 — AA-pass for large heading text */
+  --color-heading: var(--color-green);
+  /* green #859900 reaches 4.69:1 on base03 — AA-pass; magenta #d33682 only reaches 3.30:1 and fails normal-text AA */
   --color-accent: var(--color-green);
   --color-link: var(--color-base0);
   /* base1 (5.61:1) — violet #6c71c4 only reaches 3.43:1 and fails AA for body links */
