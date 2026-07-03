@@ -25,10 +25,14 @@ const { isHome = false } = Astro.props;
     <ThemeToggle />
   </div>
 </nav>
-<p class="tagline">
-  Hi 👋🏽, I am a software engineer working in JavaScript ecosystem. I write about
-  all sort of problems I face!
-</p>
+{
+  isHome && (
+    <p class="tagline">
+      Hi 👋🏽, I am a software engineer working in JavaScript ecosystem. I write
+      about all sorts of problems I face!
+    </p>
+  )
+}
 
 <style>
   .site-name {
