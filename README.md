@@ -1,6 +1,6 @@
 # [1xEngineer.dev](https://www.1xengineer.dev)
 
-Personal engineering blog by Ahmed Waleed — thoughts on software engineering, team dynamics, and the JavaScript ecosystem.
+Personal engineering blog by Ahmed Waleed — thoughts on software engineering and team dynamics from personal experience.
 
 ## Stack
 
@@ -13,8 +13,8 @@ Personal engineering blog by Ahmed Waleed — thoughts on software engineering, 
 ## Dev commands
 
 ```bash
-# Use Node 22+
-nvm use
+# Use Node 24+
+nvm use 24
 
 npm run dev       # start dev server at localhost:4321
 npm run build     # production build → dist/
