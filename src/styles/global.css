@@ -21,6 +21,8 @@
   --color-blue: #268bd2;
   --color-cyan: #2aa198;
   --color-green: #859900;
+  /* Solarized green deepened slightly for AA large-text contrast on base3 */
+  --color-green-deep: #7d8f00;
 }
 
 /* Semantic tokens — Solarized Light */
@@ -28,12 +30,13 @@
   --color-bg: var(--color-base3);
   --color-fg: var(--color-base01);
   /* Headings are WCAG "large text" (>=18.66px bold), so the AA bar is 3:1,
-     not 4.5:1. Solarized blue is the only accent comfortably clearing it on
-     BOTH backgrounds (3.41:1 on base3, 4.08:1 on base03), so headings use
-     the same hue in both modes. Magenta stays reserved for the site brand
-     mark (Navigation.astro). */
-  --color-heading: var(--color-blue);
-  --color-accent: var(--color-blue);
+     not 4.5:1 — the Solarized accents are fine here. */
+  /* Post/page titles were green h2s on the old site (magenta was only the
+     site-name brand mark, handled in Navigation.astro) */
+  --color-heading: var(--color-green-deep);
+  --color-accent: var(--color-green-deep);
+  /* #859900 is 2.97:1 on base3, a hair under the 3:1 large-text bar;
+     #7d8f00 keeps the Solarized green look at 3.36:1 */
   --color-link: var(--color-base02);
   /* base01 (4.99:1) — violet #6c71c4 only reaches 4.06:1 and fails AA for body links */
   --color-link-hover: var(--color-base01);
@@ -45,8 +48,8 @@
 .dark {
   --color-bg: var(--color-base03);
   --color-fg: var(--color-base1);
-  --color-heading: var(--color-blue); /* 4.08:1 on base03 */
-  --color-accent: var(--color-blue);
+  --color-heading: var(--color-green); /* 4.69:1 on base03 */
+  --color-accent: var(--color-green);
   --color-link: var(--color-base0);
   /* base1 (5.61:1) — violet #6c71c4 only reaches 3.43:1 and fails AA for body links */
   --color-link-hover: var(--color-base1);
