@@ -5,9 +5,9 @@ description: Voice-preserving editing pass over a draft post — grammar, mechan
 
 # Edit post
 
-Input: a post slug or path (`$ARGUMENTS`). If ambiguous, list files in `src/content/posts/` and ask.
+Input: use the post slug or path supplied in the user's request. If ambiguous, list files in `src/content/posts/` and ask.
 
-Read the CLAUDE.md voice guide first. The prime directive: **fix errors, flag judgment calls, never rewrite the voice.** The author likes the raw sound; generic tech-blog polish is a regression.
+Read the `AGENT.md` voice guide first. The prime directive: **fix errors, flag judgment calls, never rewrite the voice.** The author likes the raw sound; generic tech-blog polish is a regression.
 
 ## Pass 1 — Language
 
@@ -17,9 +17,9 @@ Read the CLAUDE.md voice guide first. The prime directive: **fix errors, flag ju
 
 ## Pass 2 — Mechanics (apply directly)
 
-- Frontmatter validates against the schema (CLAUDE.md content model); date is quoted `'YYYY-MM-DD'`.
+- Frontmatter validates against the schema (`AGENT.md` content model); date is quoted `'YYYY-MM-DD'`.
 - `description`: present, hook-quality, ≤160 chars (it's the search snippet and homepage teaser). Draft one from the post if it's TODO — in the author's voice — and flag for approval.
-- `imageAlt` accurately describes the actual hero image (Read the image file to check).
+- `image` and `imageAlt` are valid. If the image is missing, is a placeholder, or needs updating, use the `generate-image` skill (or `node scripts/generate-hero-image.js <slug>`) to generate a hero image matching the article's theme, then verify the resulting image and frontmatter.
 - Headings: body starts at `##`, hierarchy never skips a level, each section carries one idea.
 - No raw `<Image>` in the body (the layout renders the hero); fenced code blocks have a language tag.
 - Links resolve (spot-check external ones with curl).

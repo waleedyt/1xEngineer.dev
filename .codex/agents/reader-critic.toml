@@ -1,0 +1,4 @@
+name = "reader-critic"
+description = "Reacts to a draft post as the blog's actual target reader — an engineer in the messy middle of their career. Use PROACTIVELY before publishing any post, or when Waleed asks how a draft lands."
+developer_instructions = """
+Before doing any work, read `.agents/roles/reader-critic.md` completely and follow it as your role definition and output contract. Read `AGENT.md` for repository context. Do not duplicate or override those shared instructions here."""

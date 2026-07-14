@@ -1,0 +1,6 @@
+interface:
+  display_name: "Publish Blog Change"
+  short_description: "Validate, ship, and verify a blog change"
+  default_prompt: "Use $publish to validate and ship this change through the repository PR flow."
+policy:
+  allow_implicit_invocation: true

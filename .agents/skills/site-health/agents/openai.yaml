@@ -1,0 +1,6 @@
+interface:
+  display_name: "Check Site Health"
+  short_description: "Audit build, dependencies, links, and production"
+  default_prompt: "Use $site-health to run a maintenance check on the blog."
+policy:
+  allow_implicit_invocation: true

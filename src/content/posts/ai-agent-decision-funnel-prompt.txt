@@ -1,0 +1,551 @@
+# Reusable prompt: build a decision review system
+
+You are working inside an existing Git repository. Build a complete, product-neutral decision review system for AI agents and humans. Do not assume a particular application domain, company, agent runtime, model provider, CI service, or package manager.
+
+The finished system must capture consequential decisions when they are made, validate them, project them into compact agent context and a human review interface, record human acknowledgement without rewriting history, and archive old reviewed runs without deleting records. It must use the same workflow in both a single-agent repository and a multi-agent environment, including simultaneous writers in one workspace and isolated workers whose ledger segments are merged later.
+
+Work autonomously. Inspect the repository first, preserve unrelated work, and adapt only integration details that genuinely depend on the repository. Use Python 3 standard library only for the decision tooling so it works without installing dependencies or using the network.
+
+## Start with tests
+
+Before implementation, write tests derived from the requirements below. Run them and confirm they fail for the expected missing behavior. Then implement the smallest complete system that makes them pass. At the end, run the internal unit tests and an end-to-end smoke test in a temporary run segment.
+
+Never weaken a test merely to make it pass. Test observable behavior rather than implementation details.
+
+## Required layout
+
+Create these paths:
+
+```text
+AGENTS.md
+.agents/
+  skills/
+    decision-review/
+      SKILL.md
+.decisions/
+  active/
+  archive/
+  acks.jsonl
+  briefings.jsonl
+  advisor_reviews.jsonl
+  ledger.tsv                 # generated
+adr/
+  summary.md                 # generated
+tools/
+  decisions/
+    schema.json
+    validate.py
+    generate.py
+    decisionctl.py
+    sensitive_paths.txt
+    tests/
+      test_validate.py
+      test_generate.py
+      test_controller.py
+review.html                  # generated
+```
+
+If `AGENTS.md` already exists, add a clearly delimited decision-ledger section without deleting or weakening existing instructions. Generated files must carry a prominent “generated; do not edit” notice.
+
+Do not add example or fabricated decision records to the real ledger. Tests must use temporary directories or fixtures. It is acceptable for the three sidecar JSONL files to start empty.
+
+## Decision record contract
+
+Store exactly one JSON object per line in:
+
+```text
+.decisions/active/<run-id>.jsonl
+```
+
+New runs use collision-resistant IDs shaped like `run-YYYY-MM-DD-<agent-slug>-<12 lowercase hex characters>`. Continue accepting legacy run IDs shaped like `run-YYYY-MM-DDa` so existing ledgers can be migrated without rewriting history.
+
+The record schema version is 1. Support these fields:
+
+```json
+{
+  "v": 1,
+  "id": "D-YYYY-MM-DD-<32 lowercase UUID hex characters>",
+  "ts": "YYYY-MM-DDTHH:MM:SSZ",
+  "agent": "agent-or-role-name",
+  "run": "run-YYYY-MM-DD-agent-name-a1b2c3d4e5f6",
+  "type": "choice|tradeoff|assumption|deviation|blocker",
+  "tier": 1,
+  "reversible": true,
+  "summary": "One line, at most 120 characters",
+  "why": "One or two sentences",
+  "alternatives": ["Rejected alternative"],
+  "detail": {"file": "path/to/report.md", "anchor": "optional", "line": 1},
+  "code_refs": [{"file": "path/to/code", "line": 1}],
+  "constraint": "One-line rule future agents must follow",
+  "briefing": "Optional Markdown reviewer briefing",
+  "supersedes": "A current or legacy decision ID, or null",
+  "owner": "Person or team who must answer a blocker"
+}
+```
+
+Required fields are `v`, `id`, `ts`, `agent`, `run`, `type`, `tier`, `reversible`, and `summary`.
+
+`constraint` is additionally required whenever `tier == 1` or `reversible == false`. Reject unknown fields. Enforce the ID, timestamp, and run formats. Enforce string lengths and one-line restrictions defined above. IDs must be unique across all active and archived segments.
+
+New records always receive a UUID-based decision ID from `decisionctl.py`; agents never choose or reserve a numeric sequence themselves. Continue accepting legacy IDs shaped like `D-YYYY-MM-DD-NNN` so existing append-only history remains valid. UUID-based IDs and unique run-segment filenames prevent collisions when independent worktrees or machines create decisions without sharing a lock.
+
+Explain in `AGENTS.md` that a record is appended at the moment an agent:
+
+- chooses among meaningful alternatives;
+- deviates from a specification, plan, or architectural decision;
+- adopts a load-bearing assumption;
+- encounters a blocker; or
+- changes a standing rule by superseding an earlier decision.
+
+Purely mechanical execution does not require a record unless a repository-specific hook or policy requires one.
+
+The ledger is append-only: never rewrite or delete valid record lines. Corrections are new records using `supersedes`. Rotation may move a complete segment into the archive but may not alter its contents. Agents must use `decisionctl.py record` instead of hand-appending, in both single-agent and multi-agent operation.
+
+## Unified single-agent and multi-agent coordination
+
+Do not implement separate modes. A single agent and a pool of agents must use the same commands and file formats. The coordination overhead should be negligible when there is only one writer.
+
+Implement this standard-library-only CLI:
+
+```bash
+python3 tools/decisions/decisionctl.py start-run --agent <agent-name>
+python3 tools/decisions/decisionctl.py record --run <run-id> --agent <agent-name> --payload '<JSON object>'
+python3 tools/decisions/decisionctl.py add-briefing --id <decision-id> --text '<Markdown>'
+python3 tools/decisions/decisionctl.py add-advisor-review --id <decision-id> --verdict sound|needs_attention --note '<text>'
+python3 tools/decisions/decisionctl.py import-segment path/to/run-....jsonl
+```
+
+The generated `.agents/skills/decision-review/SKILL.md` must teach this same controller-backed workflow for all three supported topologies. It must not instruct agents to allocate sequential IDs, serialize through an orchestrator, hand-append ledger or sidecar JSONL, or use different commands for single-agent and multi-agent operation. It must show the exact acknowledgement command supported by `generate.py`.
+
+`start-run` must:
+
+- normalize the agent name to a safe lowercase slug;
+- create a unique run ID with 12 random lowercase hex characters from a cryptographically secure standard-library source;
+- create the empty active segment atomically while holding the ledger lock;
+- print only the run ID on success; and
+- never reuse an existing active or archived segment name.
+
+`record` must:
+
+- accept a JSON payload that omits the system-owned fields `v`, `id`, `ts`, `agent`, and `run`;
+- reject attempts to override a system-owned field;
+- add schema version 1, a UTC timestamp, the supplied agent and run, and a full 32-character lowercase UUID hex decision ID;
+- validate and confidentiality-screen the completed record before writing;
+- require the run segment to exist and require its filename to match the run ID;
+- append exactly one canonical compact JSON line while holding the ledger lock;
+- flush and `fsync` the append before releasing the lock;
+- print only the decision ID on success; and
+- leave no partial or placeholder record when validation, locking, or writing fails.
+
+While holding the lock, `record` must confirm the generated decision ID is absent from both active and archived history. In the extraordinary event of a local collision, generate a new UUID and recheck before appending.
+
+`add-briefing` and `add-advisor-review` are the only supported agent-side mutation paths for their sidecars; agents must not hand-append them. Both commands must:
+
+- acquire the same repository lock used by `record`;
+- reject an unknown decision ID before appending;
+- confidentiality-screen all supplied text without echoing a detected secret;
+- construct the sidecar object internally rather than accepting system-owned timestamps or IDs inside arbitrary JSON;
+- append one compact JSON line, flush, and `fsync` before releasing the lock;
+- print only the affected decision ID on success; and
+- leave the sidecar byte-for-byte unchanged on any failure.
+
+Additionally, `add-briefing` must enforce the required headings for the decision's tier. `add-advisor-review` must enforce the verdict enum and generate its own UTC timestamp. Last-write-wins projection behavior remains unchanged; every physical sidecar line stays in the audit trail.
+
+Use one repository-local exclusive write lock for every mutation of ledger inputs or generated projections. Implement it with portable standard-library filesystem primitives such as atomic `os.mkdir` or `os.open(..., O_CREAT | O_EXCL)`; do not depend on Unix-only advisory-lock modules. The lock must:
+
+- serialize record appends, acknowledgement/briefing/advisor sidecar appends, segment imports, rotation, and projection replacement;
+- use bounded retry with small jitter and a configurable timeout;
+- store non-sensitive diagnostic metadata such as process ID, hostname, command, and acquisition time;
+- release in a `finally` block;
+- never be committed;
+- never be broken automatically based only on age, because a slow live writer could be mistaken for a dead one; and
+- fail without mutation when the timeout expires, printing a safe recovery instruction.
+
+Avoid nested-lock deadlocks: acquire the lock once at each top-level mutating command and call internal functions that assume it is already held. Validation of the active ledger should also take a consistent read snapshot by briefly acquiring the same exclusive lock unless it is invoked from an already-locked operation.
+
+In one shared workspace, any number of agents may call `record` concurrently, including against the same run segment; the lock must make every append complete and lossless. `generate.py ack` and all other sidecar mutation paths must use the same lock so concurrent acknowledgements cannot overwrite or drop lines.
+
+For isolated worktrees, containers, or machines that do not share a filesystem lock, each worker must use its own unique run ID and segment. Merge completed segments with `import-segment` or through version control. `import-segment` must:
+
+- validate and confidentiality-screen the entire source segment before mutation;
+- read the source into one immutable byte buffer and validate the exact bytes that will be copied, rather than validating and then reopening a potentially changed source;
+- reject duplicate decision IDs against both active and archived history;
+- reject a destination filename that exists with different bytes;
+- treat an identical existing destination as an idempotent success;
+- copy through a same-directory temporary file, flush and `fsync`, then atomically rename while holding the lock; and
+- never alter the source segment.
+
+This yields three supported topologies without changing the ledger contract:
+
+1. one agent in one workspace;
+2. multiple concurrent agents sharing one workspace; and
+3. multiple isolated agents producing merge-safe segments for a later aggregator.
+
+Document the boundary clearly: atomic filesystem locking coordinates writers that share the same repository storage. Isolated or distributed writers are coordinated through collision-resistant IDs plus validated segment import, not through a lock they cannot share.
+
+## Review tiers
+
+Document and implement these tiers:
+
+- **Tier 1 — human sign-off:** irreversible choices, specification or plan deviations, security/compliance/data-boundary decisions, sensitive-path changes, and blockers requiring a human ruling.
+- **Tier 2 — notable:** reversible decisions with non-obvious performance, coupling, operational, or maintenance costs; significant assumptions.
+- **Tier 3 — routine:** naming, scaffolding, formatting, dependency pins, mechanical refactors, and other cheap-to-reverse choices.
+
+When classification is genuinely ambiguous, instruct agents to use the higher tier.
+
+Populate `tools/decisions/sensitive_paths.txt` with commented example categories rather than application-specific paths. Include authentication, authorization, audit, database migrations, secrets/environment configuration, deployment, and CI. Explain that an orchestrator should re-score suspicious Tier 3 records that touch a configured sensitive path.
+
+## Reviewer briefings
+
+Tier 1 and Tier 2 decisions should have a reviewer briefing. It may live in the record’s `briefing` field or in this append-only sidecar:
+
+```json
+{"id":"D-...","briefing":"Markdown explanation"}
+```
+
+Store sidecars in `.decisions/briefings.jsonl`; last entry for an ID wins in projections. A sidecar briefing overrides a record-level briefing.
+
+Briefings must use these headings:
+
+```markdown
+## What's decided
+## Why
+## Acking commits you to
+```
+
+The final heading is required for Tier 1 and optional for Tier 2. Instruct writers to use plain language, define unfamiliar terms on first use, list the reasons and rejected alternatives, and avoid inventing facts not present in the record or linked report.
+
+Missing Tier 1/2 briefings should not invalidate the ledger, but the digest must print a warning naming each missing briefing.
+
+## Validation and confidentiality
+
+Implement `tools/decisions/validate.py` with no dependencies outside the Python standard library.
+
+Supported commands:
+
+```bash
+python3 tools/decisions/validate.py
+python3 tools/decisions/validate.py path/to/segment.jsonl [...]
+```
+
+With no paths, validate all active segments together against the archived ID set. Exit 0 on success and 1 on violations. Report every violation as `file:line: message`. Standalone validation must acquire the coordination lock long enough to read a consistent snapshot; expose an internal already-locked path for the generator and controller.
+
+Validation must cover:
+
+- JSON parsing;
+- schema conformance using `schema.json` as the source of truth;
+- conditional `constraint` requirements;
+- duplicate IDs across active segments and against archived history;
+- confidentiality screening of each raw JSONL line.
+
+The confidentiality screen must detect common credential shapes, including AWS access keys, private-key blocks, GitHub tokens, Slack-style tokens, API keys beginning with `sk-`, JWTs, credential-bearing connection strings, and obvious assignments to password/token/secret fields.
+
+On a confidentiality hit, report only the pattern name, file, and line number. Never echo the matched secret.
+
+Apply the same screen to free text in acknowledgements, briefings, and advisor reviews before generating projections.
+
+## Digest and deterministic projections
+
+Implement:
+
+```bash
+python3 tools/decisions/generate.py
+```
+
+The digest must acquire the coordination lock once around its consistent read, any rotation, and atomic projection replacements. It must:
+
+1. Validate active ledger segments and all sidecars.
+2. Abort without dropping records if anything is invalid.
+3. Load active and archived records.
+4. Load acknowledgements, briefings, and advisor reviews with last-write-wins projection semantics.
+5. Rotate eligible old active segments.
+6. Atomically regenerate `ledger.tsv`, `adr/summary.md`, and `review.html`.
+7. Print active record count, active segment count, Tier 1 count, unacknowledged Tier 1 IDs, advisor-triage counts, rotations, budget warnings, and missing briefings.
+
+The same ledger inputs must produce byte-identical projection files regardless of filesystem enumeration or concurrent-process start order. Wall-clock time may be used only when creating new source records or sidecar entries, because those entries then become inputs.
+
+Write generated output through a temporary file followed by an atomic rename. Never partly overwrite a projection.
+
+### `ledger.tsv`
+
+This is compact active context for an orchestrator. Include one row per active record and these columns:
+
+```text
+id  tier  rev  agent  type  detail  summary
+```
+
+Sort Tier 1 first, then newest first. Escape tabs and line breaks from cells. Keep the output under an approximately 2,500-token budget when rotation permits; otherwise emit a warning.
+
+### `adr/summary.md`
+
+Generate two sections:
+
+1. `## Standing constraints`
+2. `## Decision log`
+
+Standing constraints come from every Tier 1 or irreversible record that has a constraint and has not been superseded. A superseding record retires the older constraint. Unacknowledged constraints remain provisionally binding and must be labeled `(pending human confirmation)`.
+
+The decision log includes Tier 1 and Tier 2 history from active and archived segments, grouped by month. Show reversibility, agent, type, summary, acknowledgement state, and supersession relationships. Tier 3 stays out of this summary.
+
+Keep standing constraints near an approximately 1,000-token budget and warn when they exceed it.
+
+### `review.html`
+
+Generate one self-contained HTML file with inline CSS and JavaScript and no external assets. It must work when opened directly from disk.
+
+Include:
+
+- active run IDs and headline counts;
+- filters for open items, open blockers, Tier 1, Tier 2, Tier 3, acknowledged items, and advisor-flagged items;
+- Tier 1/2 cards expanded enough to show the reviewer briefing;
+- routine Tier 3 records collapsed by default;
+- type, reversibility, owner, rationale, alternatives, detail/code references, constraint, supersession, acknowledgement note, and advisor note;
+- clear `needs answer`, `needs sign-off`, `acknowledged`, and `superseded` states;
+- a copyable command for every open Tier 1 item:
+
+```text
+review-ack <decision-id>
+```
+
+### Top decision-filter controls
+
+Render the filters at the top of the decision list as a clearly grouped, single-select button toolbar. `Open items` is selected by default. These controls must look and behave like interactive controls, not unstyled labels:
+
+- Give every button a visible default border, background, readable text, pointer cursor, consistent padding, and a minimum 40-pixel target height.
+- Add a noticeable `:hover` treatment that changes at least the background and border. Do not rely on a tiny opacity change.
+- Add a strong keyboard `:focus-visible` outline that is not removed by the hover or selected styles.
+- Give the selected filter a persistent active treatment using `[aria-pressed="true"]` (or an equivalent semantic state): filled accent background, contrasting text, stronger border, and a non-color cue such as increased font weight or an inset indicator.
+- Keep unselected buttons at `aria-pressed="false"`. When a filter is clicked, update `aria-pressed` on every toolbar button before rendering the filtered decisions, so the visual active state always matches the displayed list.
+- Use an accessible toolbar label and real `<button type="button">` elements. Keyboard activation must work through native button behavior.
+- Use a short transition for hover/selection, but disable nonessential transitions under `prefers-reduced-motion: reduce`.
+- Ensure default, hover, focus-visible, and selected states remain distinguishable in both light and dark color schemes and meet WCAG AA text contrast. Never communicate selection through color alone.
+
+Do not use `:active` alone for the selected filter: `:active` lasts only while the pointer is pressed. The persistent selected state must be driven by `aria-pressed="true"` or an equivalent state attribute.
+
+HTML-escape every ledger and sidecar field before insertion or rendering. The embedded data may be JSON, but prevent `</script>` termination.
+
+## Human acknowledgements
+
+Implement:
+
+```bash
+python3 tools/decisions/generate.py ack <decision-id> [note...]
+```
+
+This appends one line to `.decisions/acks.jsonl` while holding the same coordination lock used by record writers:
+
+```json
+{"id":"D-...","ack_ts":"UTC timestamp","by":"human","note":"optional"}
+```
+
+Then rerun the digest without reacquiring the lock.
+
+Requirements:
+
+- Reject unknown decision IDs without appending anything.
+- Never edit or remove earlier acknowledgements.
+- In projections, the latest acknowledgement timestamp wins.
+- A later empty note must not erase an earlier non-empty ruling; only another non-empty note may replace it.
+- Acknowledgement removes the pending marker but does not delete the decision.
+- Concurrent acknowledgement commands must preserve every complete sidecar line and must not race projection generation.
+
+Document a generic `review-ack` workflow in the skill. If this repository supports custom commands, add a thin runtime-specific wrapper that invokes the Python command; keep all business logic in `generate.py`.
+
+## Closing blockers
+
+An acknowledgement note may answer a blocker, but the note alone is not agent-facing policy. Document this required follow-up:
+
+1. A human acknowledges the blocker with a non-empty ruling.
+2. The orchestrator appends a new Tier 1 `choice` or `deviation` record.
+3. The new record sets `supersedes` to the blocker ID.
+4. Its `constraint` distills the ruling into a one-line rule for future agents.
+5. Its briefing cites the blocker and the human ruling.
+6. The digest runs again.
+7. Do not automatically acknowledge the new record.
+
+The new constraint becomes provisionally binding when the digest runs; the follow-up human review confirms that the ruling was distilled correctly.
+
+## Advisor triage
+
+Support an optional append-only `.decisions/advisor_reviews.jsonl` sidecar:
+
+```json
+{"id":"D-...","verdict":"sound|needs_attention","note":"Short reason","ts":"UTC timestamp"}
+```
+
+Last entry per ID wins in projections.
+
+Advisor triage is presentation-only. It may sort `needs_attention` decisions ahead of `sound` decisions and display badges, but it must never:
+
+- change a tier;
+- acknowledge a decision;
+- remove the human-review requirement;
+- alter a standing constraint; or
+- hide the underlying audit trail.
+
+Default untriaged open Tier 1 decisions to the attention side of the review queue.
+
+## Rotation and retention
+
+Archive a run segment only when all of its Tier 1 decisions are closed and it is not one of the two newest active segments.
+
+A Tier 1 decision is closed when either:
+
+- it is directly acknowledged; or
+- it is superseded by a decision that is acknowledged.
+
+A superseded decision whose replacement is still unacknowledged is not closed for rotation purposes.
+
+Move eligible segments under:
+
+```text
+.decisions/archive/YYYY-MM/<original-filename>
+```
+
+Never delete or rewrite a segment. If the destination already exists, refuse the move and warn.
+
+If compact context exceeds its budget, attempt to rotate the oldest fully closed segment, but never rotate the newest active segment merely to meet the budget.
+
+## Agent instructions and skill
+
+Add a concise but complete decision contract to `AGENTS.md`, including:
+
+- when to record;
+- the append-only rule;
+- tier definitions;
+- confidentiality restrictions;
+- reviewer-briefing requirements;
+- how standing constraints are loaded and superseded;
+- how blockers close;
+- orchestrator duties before dispatch and after collecting results.
+
+The orchestrator duties must say to load `ledger.tsv` plus only the Standing Constraints section of `adr/summary.md` before dispatch, give every isolated worker a unique run ID, re-score sensitive-path Tier 3 records, import isolated worker segments, and run the digest after collecting results. Shared-workspace workers may write to a common task run because the controller serializes their appends, though one run per worker remains easier to attribute and merge.
+
+Create `.agents/skills/decision-review/SKILL.md` with complete procedures for:
+
+- appending a valid decision safely;
+- starting a collision-resistant run and recording through `decisionctl.py`;
+- operating as a single agent with the same workflow;
+- operating concurrent agents in a shared workspace;
+- importing segments from isolated agents or worktrees;
+- responding safely to lock timeouts without deleting a live writer's lock;
+- validating;
+- digesting;
+- adding or backfilling a briefing;
+- adding briefings and advisor reviews only through their locked controller commands, never by hand-appending;
+- acknowledging a decision;
+- closing a blocker correctly;
+- interpreting advisor triage;
+- correcting invalid new lines without changing existing valid lines.
+
+Keep the skill and repository instructions domain-neutral.
+
+## Required tests
+
+Use `unittest`, temporary directories, and the real scripts. At minimum cover:
+
+### Validator
+
+- valid Tier 1, Tier 2, and Tier 3 records;
+- malformed JSON;
+- missing required fields;
+- Tier 1 without a constraint;
+- irreversible record without a constraint;
+- unknown field rejection;
+- invalid ID, timestamp, and run formats;
+- overlong or multiline summary/constraint;
+- duplicate IDs in one segment and across segments;
+- every confidentiality pattern;
+- proof that validation output never echoes the detected secret.
+
+### Generator
+
+- deterministic TSV ordering and cell cleaning;
+- active plus archived history in the Markdown log;
+- only active records in TSV and HTML;
+- pending markers before acknowledgement and their removal afterward;
+- unknown acknowledgement rejection with no append;
+- acknowledgement-note preservation;
+- supersession removes only the retired standing constraint;
+- unacknowledged superseding decisions block rotation;
+- acknowledged replacement permits old-segment rotation;
+- sidecar briefing overrides record briefing;
+- missing-briefing warnings;
+- acknowledgement, briefing, and advisor sidecar confidentiality validation;
+- advisor verdict changes sorting/badges only, never acknowledgement state;
+- top decision filters use real buttons in a labeled single-select toolbar, with `Open items` selected on initial load;
+- filter controls have distinguishable default, hover, focus-visible, and persistent selected states, and clicking a filter synchronizes `aria-pressed` state with the rendered decisions;
+- selected-filter styling uses a persistent state attribute rather than the transient CSS `:active` pseudo-class, remains non-color-dependent, and includes reduced-motion handling;
+- HTML escaping, including a malicious `</script>` value;
+- atomic projection replacement;
+- refusal to overwrite an existing archive destination.
+
+### Coordination controller
+
+- one-agent `start-run` and `record` lifecycle without manual ID allocation;
+- safe agent-name slugging and rejection of invalid or empty names;
+- rejection of payloads that try to set system-owned fields;
+- completed-record schema and confidentiality validation before append;
+- twenty or more simultaneous writers to one shared segment, proving unique IDs, valid JSON, and no lost lines;
+- simultaneous writers to different segments;
+- concurrent acknowledgement appends with no lost sidecar lines;
+- concurrent briefing appends with no lost sidecar lines;
+- concurrent advisor-review appends with no lost sidecar lines;
+- unknown decision IDs and confidential text rejected by each sidecar command without appending;
+- lock timeout fails without changing the ledger;
+- lock release after an exception;
+- full UUID decision-ID uniqueness and unique run filenames;
+- two independent temporary repository copies create merge-safe segment names and decision IDs without a shared lock;
+- successful import of those independent segments;
+- idempotent import of byte-identical content;
+- rejection of a same-name/different-content import;
+- rejection of an imported decision ID already present in active or archived history;
+- import failure leaves no partial destination;
+- source-import validation applies to the exact immutable bytes written, without a validate-then-reopen race; and
+- compatibility with existing sequential decision IDs and letter-suffixed run IDs.
+
+## Final verification
+
+Run:
+
+```bash
+python3 -m unittest discover -s tools/decisions/tests -p 'test_*.py'
+python3 tools/decisions/validate.py
+python3 tools/decisions/generate.py
+```
+
+Then perform three end-to-end smoke tests in temporary repository copies so no fabricated records enter the real ledger.
+
+### Single agent
+
+1. Start a run and record one valid Tier 1 decision through `decisionctl.py`.
+2. Run the digest and prove it appears as pending in all relevant projections.
+3. Add an advisor `needs_attention` verdict and prove it remains unacknowledged.
+4. Acknowledge it with a note and prove the pending marker disappears while the decision remains.
+5. Append a superseding decision and prove only the replacement constraint is active.
+
+### Concurrent shared workspace
+
+1. Start one run.
+2. Launch at least 20 `record` processes simultaneously against that run.
+3. Prove every process succeeds, every returned ID is unique, the segment has exactly 20 complete JSON lines, and full validation succeeds.
+4. Launch concurrent acknowledgements for several IDs and prove no sidecar lines are lost.
+5. Launch concurrent briefing and advisor-review commands and prove both sidecars preserve every line.
+
+### Isolated workers
+
+1. Create two independent temporary repository copies.
+2. Start a run and record a decision in each without shared storage.
+3. Prove their run filenames and decision IDs differ.
+4. Import both segments into a clean aggregator copy.
+5. Prove repeated import is idempotent, the combined ledger validates, and projections include both records deterministically.
+
+Report:
+
+- files created or changed;
+- tests run with exact pass/fail counts;
+- smoke-test evidence;
+- runtime-specific integrations added or deliberately omitted;
+- any remaining limitations.
+
+Do not claim completion unless every required command has been run fresh and exits successfully.
