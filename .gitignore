@@ -34,3 +34,6 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# agent workspaces and runs
+/.claude/plans/

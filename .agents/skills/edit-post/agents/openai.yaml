@@ -1,0 +1,6 @@
+interface:
+  display_name: "Edit Blog Post"
+  short_description: "Edit a draft without smoothing out its voice"
+  default_prompt: "Use $edit-post to review and polish this draft while preserving my voice."
+policy:
+  allow_implicit_invocation: true

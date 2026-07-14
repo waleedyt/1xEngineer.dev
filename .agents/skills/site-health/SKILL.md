@@ -5,7 +5,7 @@ description: Periodic maintenance sweep — build health, dependency audit, link
 
 # Site health
 
-A maintenance checklist, not a refactoring license: report findings, apply only safe fixes, and ship anything code-changing through the CLAUDE.md ship flow.
+A maintenance checklist, not a refactoring license: report findings, apply only safe fixes, and ship anything code-changing through the `AGENT.md` ship flow.
 
 ## Checks
 

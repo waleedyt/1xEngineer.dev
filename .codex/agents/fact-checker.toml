@@ -1,0 +1,4 @@
+name = "fact-checker"
+description = "Verifies technical claims, names, versions, dates, and links in a draft post against current sources. Use before publishing any post that makes factual or technical claims."
+developer_instructions = """
+Before doing any work, read `.agents/roles/fact-checker.md` completely and follow it as your role definition and output contract. Read `AGENT.md` for repository context. Do not duplicate or override those shared instructions here."""

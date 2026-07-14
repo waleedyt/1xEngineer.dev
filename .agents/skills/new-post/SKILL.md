@@ -5,12 +5,12 @@ description: Scaffold a new blog post from a topic and interview the author to b
 
 # New post
 
-Input: a topic or rough idea (`$ARGUMENTS`). If empty, ask what the post is about.
+Input: use the topic or rough idea supplied in the user's request. If empty, ask what the post is about.
 
 ## Step 1 — Scaffold the file
 
 1. Derive a short kebab-case slug from the topic (this becomes the permanent URL `/posts/<slug>/` — keep it meaningful, no dates, no stop-words).
-2. Create `src/content/posts/<slug>.mdx` with valid frontmatter per CLAUDE.md's content model:
+2. Create `src/content/posts/<slug>.mdx` with valid frontmatter per `AGENT.md`'s content model:
    - `title`: working title (mark it as provisional in your summary — titles are decided last)
    - `description`: `TODO — write after the draft is done`
    - `date`: today's date (`date +%F`)
@@ -32,4 +32,8 @@ The author writes experience-first posts. Never generate the blog or outline fro
 
 Turn the answers into a bullet point outline in the file so that it seems mechanical, precise and clear and then author converts in an engaging post. Leave the writing to the author — the skill's job is to help brainstorm, not to draft the post.
 
-Finish by summarizing: file created, outline headings, and what's still TODO (hero image, description, title decision).
+## Step 4 — Generate Hero Image (Proactive Offer)
+
+Once the outline is written, proactively offer to generate a custom hero image using the `generate-image` skill (or by running `node scripts/generate-hero-image.js <slug>`). If the user agrees, trigger image generation immediately to replace the placeholder image and alt text so the site builds cleanly.
+
+Finish by summarizing: file created, outline headings, image generation status, and what's still TODO (drafting the body, description, and title decision).

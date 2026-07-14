@@ -5,9 +5,9 @@ description: Pre-flight checks and full ship pipeline for a post or site change 
 
 # Publish
 
-Input: a post slug, or a description of the change being shipped (`$ARGUMENTS`).
+Input: use the post slug or change description supplied in the user's request.
 
-This file is the single source of truth for the ship pipeline (CLAUDE.md's ship policy points here). Follow CLAUDE.md's environment gotchas: Node 24 active, commits authored as ch.aw.yt@gmail.com. Never push directly to main.
+This file is the single source of truth for the ship pipeline (`AGENT.md`'s ship policy points here). Follow `AGENT.md`'s environment gotchas: Node 24 active, commits authored as ch.aw.yt@gmail.com. Never push directly to main.
 
 ## Pre-flight (must all pass before creating a PR)
 

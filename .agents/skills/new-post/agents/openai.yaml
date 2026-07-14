@@ -1,0 +1,6 @@
+interface:
+  display_name: "New Blog Post"
+  short_description: "Interview the author and scaffold a new post"
+  default_prompt: "Use $new-post to help me develop a new experience-first blog post."
+policy:
+  allow_implicit_invocation: true
