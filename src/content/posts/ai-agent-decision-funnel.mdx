@@ -53,7 +53,7 @@ That led to what I now call the **decision funnel**: an append-only ledger where
 
 The ledger separates decisions into three groups:
 
-- **Tier 1:** irreversible, security-sensitive, or specification-changing decisions that need human sign-off. Anything is reversible now—"irreversible" means that reversing it might shake foundations at an extremely high cost.
+- **Tier 1:** irreversible, security-sensitive, or spec changing decisions that need human sign-off. Actually, anything is reversible now "irreversible" just means that reversing it might shake foundations at an extremely high cost later in the timeline.
 - **Tier 2:** reversible decisions with non-obvious costs.
 - **Tier 3:** routine choices such as naming, linting, and mechanical refactoring.
 
@@ -61,11 +61,11 @@ Most decisions are Tier 3. I do not need to spend human energy deciding whether 
 To make it intuitive, I asked it to output HTML and add a button to mark the decision reviewed. The simpler solution Fable 5 came up with was to copy a command to the clipboard, which I can just paste in to Claude Code although I am sure, there can be a better way.
 
 ![Decision Review Preview](../../assets/images/decision-review-preview.html.png)
-<p class="text-center text-xs -mt-2 mb-6 italic" style="color: var(--color-muted);">The HTML interface displaying the append-only ledger of categorized decisions with review status.</p>
+<p class="text-center text-xs -mt-2 mb-6 italic" style="color: var(--color-muted);">My review.html UI displaying the append-only ledger of categorized decisions with review status.</p>
 
 ## How to run this yourself (The System Prompt)
 
-To implement this, you can equip your agents with a system instruction that forces them to write to a central ledger whenever they make a choice. Here is the generic prompt I used:
+To implement this, you can equip your agents with a system prompt that forces them to write to a central ledger whenever they make a choice. I worked with Fable 5 and went back and forth to create the system. However, here is the generic prompt which I generated through GPT 5.6 Sol by asking it to assess the system:
 
 <details class="group relative">
 <summary class="cursor-pointer select-none"><b>Click to expand the System Prompt</b></summary>
@@ -95,9 +95,9 @@ I am still figuring this out in my own workflow. I don’t think there is a clea
 2. **Oversight is still work.** A better queue does not make difficult decisions easy. 
 3. **Work is not getting easier.** Engineering used to be: make some decisions, get them approved, and implement them with some solace. Rinse and repeat. However, now that the implementation is going away, we are probably going to be making a lot of decisions—some of them very difficult and consuming.
 
-I am not sure if I have built the right system yet so exploration will continue. If you have more wonderful ideas, please do leave them in the comments.
+If you have more wonderful ideas, please do leave them in the comments.
 
-P.S. I haven't used this system in a brownfield project yet. For brownfield projects, I recommend that you stick to agentic systems that are closer to the SDLC and keep the human in the loop. I recommend checking out Addy Osmani's [agent-skills](https://github.com/addyosmani/agent-skills) repo. Feel free to experiment on top of it though. 
+Disclaimer: I haven't used this system in a brownfield project yet. For brownfield projects, I recommend that you stick to agentic systems that are closer to the SDLC. I recommend checking out Addy Osmani's [agent-skills](https://github.com/addyosmani/agent-skills) repo. Feel free to experiment on top of it with your own decision system though. 
 
 
 
