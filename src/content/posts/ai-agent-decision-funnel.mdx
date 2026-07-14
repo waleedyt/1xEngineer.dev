@@ -21,9 +21,11 @@ To move fast, I spun up a team of specialized agents running in parallel git wor
 - **Tech Lead** (running Opus) to decompose those specs into tasks.
 - **Backend, Frontend, Migration, and QA Engineers** (running Sonnet) to implement the specs.
 
-Every time they worked, they followed a structured orchestration model: specs → ADRs → backlog → parallel execution → review. Because they were running concurrently, the volume of code, specs, and review notes was massive.
+System followed a structured orchestration model: specs → ADRs → backlog → parallel execution → review. 
+And the team started working! It worked very well. Actually, a little too well for my liking. Because they were running concurrently, 
+the volume of code, specs, and review notes was massive.
 
-So it worked! Actually a little too well for my liking. Every time I opened the repository, there was another stream of commits, specifications, ADRs and review notes waiting for me. 
+Every time I opened the repository, there was another stream of commits, specifications, ADRs and review notes waiting for me. 
 The work was moving forward, but I was slowly losing the ability to tell whether it was moving in the right direction because there was too much to review. I would carefully review a few things, 
 get tired, and then start rubber-stamping the rest because of the review fatigue. 
 
@@ -31,7 +33,7 @@ I soon realized it's not going to scale. It was difficult for me to decide what 
 My reviews also caught many mistakes that needed to be fixed. However, most of the time it was just an FYI for me, adding no value. It was confusing, do I acknowledge my limits and accept that I am the bottleneck? 
 Or do I just let it be, vibe code the whole thing and just validate the end product? 
 
-Fortunately that day, I also tuned in to the latest podcast by Pragmatic Engineer with Kent Beck which made me realize that a 
+Fortunately that day, I also tuned in to the latest podcast by [Pragmatic Engineer with Kent Beck](https://www.youtube.com/watch?v=ddHQQtjIOpw) which made me realize that a 
 major part of what we do as engineers is to build trust in what we deliver, and it resonated with me. 
 So staying out of the way with little to no trust in the end product wasn't the right answer.
 
