@@ -1,0 +1,6 @@
+interface:
+  display_name: "Generate Hero Image"
+  short_description: "Generate and apply hero-image candidates"
+  default_prompt: "Use $generate-image to create hero-image options for this blog post."
+policy:
+  allow_implicit_invocation: true
