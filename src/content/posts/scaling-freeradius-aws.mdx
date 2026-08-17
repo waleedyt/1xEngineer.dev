@@ -1,0 +1,162 @@
+---
+title: 'Scaling FreeRADIUS on Cloud for Multi-Tenant Architecture'
+description: 'TODO — write after the draft is done'
+date: '2026-07-31'
+image: '../../assets/images/scaling-freeradius-aws.jpg'
+imageAlt: 'Editorial illustration representing multi-tenant FreeRADIUS scaling in AWS'
+---
+
+# Scaling FreeRADIUS on Cloud for Multi-Tenant Architecture
+
+## 1. Why FreeRADIUS on Cloud? If thats still a question!
+If you are here reading this post, chances are you know what you are doing as this post is very
+specific to a very niche problem. FreeRADIUS powers the world's radius network authentications. Most of us use it without knowing much
+about it. Telecoms, ISPs and enterprise networks are prime examples where FreeRadius is usually a defacto choice
+as a server. 
+
+At my work I had a chance to build a Cloud Network Access Control product from ground up. It offered RadSec secured 802.1x network authentications 
+as a cloud service. FreeRADIUS was the obvious radius server choice for us and like usually with saas, it was a multi tenant solution focusing 
+on cost optimization and efficiency. 
+
+While building the product, we solved many problems over the years however the first one and the most important one was to scale the FreeRadius. 
+Here are some of the problems one has to consider while designing a solution:
+1. Radius is basically udp packets and not secure over public network. To counter this, you have to ensure that RadSec(Radius over TLS) is enabled. 
+2. EAP authentications are stateful, there are multiple packet exchanges against each authentication request
+3. Usage spikes at usual busy hours for instance in morning when people are signing in at office. 
+During the day people roam around but its spontaneous throughout the day.
+4. 
+
+- Reflecting on building a multi-tenant RADIUS backend during a client project at Emumba for an enterprise SaaS solution.
+- Framing the problem: Why standard single-tenant FreeRADIUS setups fail when serving multiple organizations in AWS.
+- Protocol selection: Moving from legacy UDP RADIUS to RadSec (RADIUS over TLS / TCP on port 2083) + `rlm_rest` to dynamically resolve tenant policies (`Filter-Id`).
+
+---
+
+## 2. Comparing the 3 Architectural Options
+
+### Scenario 1: AWS NLB TLS Termination (Rejected)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor NAS as NAS / Access Point
+    participant NLB as AWS NLB (TLS Listener)
+    participant FR as FreeRADIUS Fleet
+    participant AUTH as Auth Service
+
+    NAS->>NLB: 1. RadSec TLS (Port 2083)
+    Note over NLB: Terminates TLS & drops<br/>Client Certificate context!
+    NLB->>FR: 2. Unencrypted Plain RADIUS (over TCP)
+    FR->>AUTH: 3. rlm_rest POST (Missing Tenant Cert!)
+    Note over AUTH: Fails: Cannot identify tenant
+```
+
+* **Why it fails**:
+  * Multi-tenant security relies on client certificates (mTLS) to trust and extract `tenant_id`.
+  * AWS NLB terminates TLS at the edge but **cannot inspect client certs or modify raw RADIUS packets** to append tenant metadata.
+  * FreeRADIUS receives plain RADIUS packets with zero visibility into which client certificate established the session.
+
+---
+
+### Scenario 2: Dedicated Reverse Proxy / RadSecProxy Fleet in AWS (Rejected)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor NAS as NAS / Access Point
+    participant NLB as AWS NLB (L4 Passthrough)
+    participant PROXY as RadSecProxy Fleet
+    participant FR as FreeRADIUS Fleet
+    participant AUTH as Auth Service
+
+    NAS->>NLB: 1. RadSec TLS (Port 2083)
+    NLB->>PROXY: 2. Encrypted TLS Stream (Passthrough)
+    Note over PROXY: Terminates mTLS & rewrites<br/>RADIUS attributes (Extra Hop & Stateful Load)
+    PROXY->>FR: 3. Plain RADIUS + Injected Tenant Attribute
+    FR->>AUTH: 4. rlm_rest POST
+    AUTH-->>FR: 5. Return Tenant Policy
+```
+
+* **Why it hurts**:
+  * Introduces an extra stateful proxy tier in AWS that requires scaling, patching, and failover management.
+  * Packet-level debugging (`tcpdump`, `radmin`, `radiusd -X`) across proxy hops becomes a painful diagnostic nightmare.
+  * Adds unnecessary network hops and latency to every authentication request.
+
+---
+
+### Scenario 3: Direct FreeRADIUS TLS Termination behind AWS NLB with On-Prem RadSec Proxy (Recommended)
+
+```mermaid
+flowchart LR
+    subgraph Tenant ["Tenant Premises (On-Site)"]
+        NAS["Access Point / NAS<br/>(Legacy RADIUS)"]
+        PROXY["On-Prem RadSec Proxy<br/>(Converts to mTLS)"]
+        NAS -->|"1. Local UDP 1812"| PROXY
+    end
+
+    NLB["AWS NLB<br/>(1 Instance - L4 Passthrough)"]
+    FR["FreeRADIUS Fleet<br/>(Terminates mTLS)"]
+    AUTH["Auth Service<br/>(Backend)"]
+
+    PROXY -->|"2. RadSec TLS (2083)"| NLB
+    NLB -->|"3. Passthrough TCP"| FR
+    FR <-->|"4. rlm_rest (Tenant Cert)"| AUTH
+    FR -.->|"5. Access-Accept + Filter-Id"| NAS
+
+    style Tenant fill:#f9f9f9,stroke:#666666,stroke-width:2px,stroke-dasharray: 5 5
+    style NLB fill:#e1f5fe,stroke:#0288d1,color:#01579b
+    style FR fill:#e8f5e9,stroke:#388e3c,color:#1b5e20
+    style AUTH fill:#fff3e0,stroke:#f57c00,color:#e65100
+```
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    box Tenant Premises (On-Site)
+    actor NAS as Access Point / NAS
+    participant PROXY as On-Prem RadSec Proxy
+    end
+
+    participant NLB as AWS NLB (1 Instance)
+    participant FR as FreeRADIUS (Terminates mTLS)
+    participant AUTH as Auth Service
+
+    NAS->>PROXY: 1. Legacy RADIUS (UDP 1812/1813)
+    Note over PROXY: Converts legacy RADIUS<br/>to RadSec TLS (mTLS)
+    PROXY->>NLB: 2. RadSec TLS (Port 2083)
+    NLB->>FR: 3. Encrypted RadSec TLS Stream (Passthrough)
+    Note over FR: Terminates TLS & extracts<br/>TLS-Client-Cert-Common-Name
+    FR->>AUTH: 4. rlm_rest POST (Tenant Cert + User)
+    AUTH-->>FR: 5. Return Tenant Policy (Filter-Id)
+    FR-->>NAS: 6. Access-Accept + Filter-Id
+```
+
+* **Why it wins**:
+  * **Legacy Compatibility**: On-premises RadSec Proxy allows legacy Access Points (which can't speak RadSec natively) to send standard UDP RADIUS locally within the tenant premises, while securing the WAN link to AWS over RadSec TLS.
+  * **Security**: Preserves end-to-end mTLS across the WAN. FreeRADIUS directly reads `%{TLS-Client-Cert-Common-Name}` from the tenant's RadSec proxy cert in `unlang` and securely forwards it to `rlm_rest`.
+  * **Simplicity**: AWS NLB acts purely as a fast, cheap L4 TCP passthrough balancer.
+  * **Scalability**: FreeRADIUS nodes scale horizontally in AWS (ECS/EKS/EC2) alongside TLS handshake workloads.
+
+---
+
+## 3. Essential AWS & FreeRADIUS Production Tuning
+
+### EAP Stateful Sticky Sessions
+- EAP authentication (EAP-TLS, EAP-PEAP) requires multiple round-trip packets between client and server.
+- Must enable **Sticky Sessions on AWS NLB** so all packets within an EAP session route to the same FreeRADIUS target instance.
+
+### Idle Timeout Alignment (The 6-Minute Rule)
+- Prevent connection state drift between AWS infrastructure and FreeRADIUS.
+- Set `idle_timeout` to **6 minutes (360 seconds)** on both AWS NLB TCP target groups and FreeRADIUS listener configuration to ensure synchronized connection teardown.
+
+### `rlm_rest` Attribute Mapping
+- Extracting tenant identity from RadSec client certs in FreeRADIUS `unlang`.
+- Relaying request attributes to the multi-tenant backend API and returning tenant-specific RADIUS reply attributes (e.g., `Filter-Id`).
+
+---
+
+## 4. Key Takeaways
+- Don't overcomplicate RADIUS in the cloud with extra proxy tiers inside AWS.
+- Use lightweight on-premises RadSec proxies for legacy hardware to bridge UDP to RadSec TLS.
+- Let AWS NLB do fast L4 TCP passthrough, and let FreeRADIUS do what it was built for: native TLS and fast attribute processing.
