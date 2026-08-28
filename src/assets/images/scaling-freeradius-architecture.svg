@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 400" width="100%" height="100%" style="background:#ffffff; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#0284c7" />
+    </marker>
+    <marker id="arrowhead-start" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto">
+      <polygon points="8 0, 0 3, 8 6" fill="#0284c7" />
+    </marker>
+    <marker id="arrowhead-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#64748b" />
+    </marker>
+    <marker id="arrowhead-start-gray" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto">
+      <polygon points="8 0, 0 3, 8 6" fill="#64748b" />
+    </marker>
+    <filter id="drop-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Main Title -->
+  <text x="575" y="32" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a" letter-spacing="-0.02em">Multi-Tenant RadSec Architecture on AWS</text>
+
+  <!-- 1. Tenant Premises Subgraph -->
+  <g transform="translate(30, 55)">
+    <rect width="400" height="310" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 6"/>
+    <rect x="16" y="-12" width="200" height="24" rx="6" fill="#475569"/>
+    <text x="116" y="4" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">Tenant Premises (On-Site)</text>
+
+    <!-- Node 1: AP / NAS -->
+    <g transform="translate(25, 60)" filter="url(#drop-shadow)">
+      <rect width="145" height="180" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+      <rect x="0" y="0" width="145" height="36" rx="8" fill="#f1f5f9"/>
+      <path d="M0 28 h145 v8 h-145 z" fill="#f1f5f9"/>
+      <text x="72" y="23" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">Access Points</text>
+      
+      <!-- AP Icon Graphic -->
+      <circle cx="72" cy="85" r="18" fill="#e2e8f0"/>
+      <path d="M64 85 a8 8 0 0 1 16 0 M58 85 a14 14 0 0 1 28 0 M52 85 a20 20 0 0 1 40 0" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="72" cy="85" r="3" fill="#0284c7"/>
+      
+      <text x="72" y="130" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">NAS / Wi-Fi APs</text>
+      <text x="72" y="150" text-anchor="middle" font-size="10" fill="#64748b">Legacy UDP 1812</text>
+      <text x="72" y="165" text-anchor="middle" font-size="10" fill="#64748b">Standard RADIUS</text>
+    </g>
+
+    <!-- Bidirectional Arrow AP <-> Proxy -->
+    <line x1="175" y1="150" x2="225" y2="150" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead-gray)" marker-start="url(#arrowhead-start-gray)"/>
+    <text x="200" y="135" text-anchor="middle" font-size="10" font-weight="600" fill="#475569">Local UDP</text>
+    <text x="200" y="172" text-anchor="middle" font-size="9" fill="#64748b">1812/1813</text>
+
+    <!-- Node 2: RadSec Proxy -->
+    <g transform="translate(230, 60)" filter="url(#drop-shadow)">
+      <rect width="145" height="180" rx="8" fill="#ffffff" stroke="#f59e0b" stroke-width="2"/>
+      <rect x="0" y="0" width="145" height="36" rx="8" fill="#fef3c7"/>
+      <path d="M0 28 h145 v8 h-145 z" fill="#fef3c7"/>
+      <text x="72" y="23" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">RadSec Proxy</text>
+      
+      <!-- Proxy Icon Graphic -->
+      <rect x="52" y="68" width="40" height="34" rx="4" fill="#fde68a" stroke="#d97706" stroke-width="1.5"/>
+      <circle cx="62" cy="85" r="3" fill="#b45309"/>
+      <circle cx="72" cy="85" r="3" fill="#b45309"/>
+      <circle cx="82" cy="85" r="3" fill="#b45309"/>
+      
+      <text x="72" y="130" text-anchor="middle" font-size="11" font-weight="600" fill="#92400e">On-Prem Gateway</text>
+      <text x="72" y="150" text-anchor="middle" font-size="10" fill="#78350f">Wraps in mTLS</text>
+      <text x="72" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#b45309">Tenant Client Cert</text>
+    </g>
+  </g>
+
+  <!-- WAN Bidirectional Connection Arrow -->
+  <g transform="translate(430, 205)">
+    <line x1="10" y1="0" x2="80" y2="0" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)"/>
+    <text x="45" y="-14" text-anchor="middle" font-size="11" font-weight="700" fill="#0369a1">RadSec TLS</text>
+    <text x="45" y="18" text-anchor="middle" font-size="10" font-weight="600" fill="#0284c7">TCP 2083 (WAN)</text>
+  </g>
+
+  <!-- 2. AWS Cloud Infrastructure Subgraph -->
+  <g transform="translate(520, 55)">
+    <rect width="600" height="310" rx="12" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+    <rect x="16" y="-12" width="210" height="24" rx="6" fill="#0284c7"/>
+    <text x="121" y="4" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">AWS Cloud Infrastructure</text>
+
+    <!-- Node 3: AWS NLB -->
+    <g transform="translate(25, 60)" filter="url(#drop-shadow)">
+      <rect width="150" height="180" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+      <rect x="0" y="0" width="150" height="36" rx="8" fill="#e0f2fe"/>
+      <path d="M0 28 h150 v8 h-150 z" fill="#e0f2fe"/>
+      <text x="75" y="23" text-anchor="middle" font-size="13" font-weight="700" fill="#0369a1">AWS NLB</text>
+      
+      <!-- NLB Icon -->
+      <circle cx="75" cy="85" r="18" fill="#bae6fd"/>
+      <path d="M65 85 h20 M75 75 v20 M68 78 l14 14 M68 92 l14 -14" stroke="#0284c7" stroke-width="2"/>
+      
+      <text x="75" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#0369a1">1 NLB Instance</text>
+      <text x="75" y="145" text-anchor="middle" font-size="10" fill="#0284c7">L4 TCP Passthrough</text>
+      <text x="75" y="160" text-anchor="middle" font-size="10" font-weight="600" fill="#0369a1">Sticky Sessions</text>
+      <text x="75" y="175" text-anchor="middle" font-size="9" fill="#64748b">Idle Timeout: 6 min</text>
+    </g>
+
+    <!-- Bidirectional Arrow NLB <-> FreeRADIUS -->
+    <line x1="180" y1="150" x2="220" y2="150" stroke="#0284c7" stroke-width="2" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)"/>
+    <text x="200" y="138" text-anchor="middle" font-size="10" font-weight="600" fill="#0369a1">TCP</text>
+    <text x="200" y="168" text-anchor="middle" font-size="9" fill="#0284c7">Stream</text>
+
+    <!-- Node 4: FreeRADIUS Fleet -->
+    <g transform="translate(225, 60)" filter="url(#drop-shadow)">
+      <rect width="165" height="180" rx="8" fill="#ffffff" stroke="#10b981" stroke-width="2"/>
+      <rect x="0" y="0" width="165" height="36" rx="8" fill="#d1fae5"/>
+      <path d="M0 28 h165 v8 h-165 z" fill="#d1fae5"/>
+      <text x="82" y="23" text-anchor="middle" font-size="13" font-weight="700" fill="#065f46">FreeRADIUS Fleet</text>
+      
+      <!-- Server Cluster Icon -->
+      <rect x="52" y="65" width="60" height="16" rx="3" fill="#a7f3d0" stroke="#059669" stroke-width="1.2"/>
+      <rect x="52" y="85" width="60" height="16" rx="3" fill="#a7f3d0" stroke="#059669" stroke-width="1.2"/>
+      <circle cx="58" cy="73" r="2" fill="#047857"/>
+      <circle cx="58" cy="93" r="2" fill="#047857"/>
+      
+      <text x="82" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#065f46">Horizontal Scale</text>
+      <text x="82" y="145" text-anchor="middle" font-size="10" fill="#047857">Terminates mTLS</text>
+      <text x="82" y="160" text-anchor="middle" font-size="10" font-weight="600" fill="#065f46">Extracts Tenant CN</text>
+      <text x="82" y="175" text-anchor="middle" font-size="9" fill="#059669">rlm_rest Engine</text>
+    </g>
+
+    <!-- Bidirectional Arrow FreeRADIUS <-> Auth Service -->
+    <line x1="395" y1="150" x2="425" y2="150" stroke="#0284c7" stroke-width="2" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)"/>
+    <text x="410" y="138" text-anchor="middle" font-size="10" font-weight="600" fill="#0369a1">HTTP</text>
+    <text x="410" y="168" text-anchor="middle" font-size="9" fill="#0284c7">REST</text>
+
+    <!-- Node 5: Auth Service -->
+    <g transform="translate(430, 60)" filter="url(#drop-shadow)">
+      <rect width="145" height="180" rx="8" fill="#ffffff" stroke="#6366f1" stroke-width="2"/>
+      <rect x="0" y="0" width="145" height="36" rx="8" fill="#ede9fe"/>
+      <path d="M0 28 h145 v8 h-145 z" fill="#ede9fe"/>
+      <text x="72" y="23" text-anchor="middle" font-size="13" font-weight="700" fill="#4338ca">Auth Service</text>
+      
+      <!-- API Icon -->
+      <rect x="50" y="65" width="44" height="36" rx="4" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.2"/>
+      <path d="M58 83 h28 M64 75 l-6 8 l6 8 M80 75 l6 8 l-6 8" fill="none" stroke="#6d28d9" stroke-width="1.5" stroke-linecap="round"/>
+      
+      <text x="72" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#4338ca">Backend API</text>
+      <text x="72" y="145" text-anchor="middle" font-size="10" fill="#5b21b6">Multi-Tenant DB</text>
+      <text x="72" y="160" text-anchor="middle" font-size="10" font-weight="600" fill="#4338ca">Resolves Filter-Id</text>
+      <text x="72" y="175" text-anchor="middle" font-size="9" fill="#6d28d9">Dynamic VLAN Policy</text>
+    </g>
+  </g>
+</svg>
