@@ -14,7 +14,7 @@ interface Props {
 
 const DEFAULT_TITLE = '1xEngineer';
 const DEFAULT_DESCRIPTION =
-  'A Software Engineer working in JavaScript Ecosystem; Exploring the mesh of people and engineering';
+  'I build distributed systems and lead engineering teams. These days, I’m exploring what happens when human craftsmanship and AI agents work together.';
 
 const {
   title = DEFAULT_TITLE,
@@ -98,8 +98,16 @@ const resolvedImage =
       </main>
       <footer>
         <div class="container footer-inner">
-          Built by{' '}
-          <a href="https://twitter.com/_waleed_yt">Waleed</a>
+          <p class="footer-prompt">
+            Open to thoughtful conversations, feedback, and interesting engineering problems.
+          </p>
+          <div class="footer-links">
+            <a href="mailto:ch.aw.yt@gmail.com" class="footer-link">Get in touch</a>
+            <a href="https://github.com/waleedyt" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+            <a href="https://www.linkedin.com/in/ahmedyt/" target="_blank" rel="noopener noreferrer" class="footer-link">LinkedIn</a>
+            <a href="https://twitter.com/_waleed_yt" target="_blank" rel="noopener noreferrer" class="footer-link">X (Twitter)</a>
+            <a href="/rss.xml" class="footer-link">RSS</a>
+          </div>
         </div>
       </footer>
     </div>
@@ -122,14 +130,31 @@ const resolvedImage =
         padding-block: 2rem;
       }
       .footer-inner {
-        padding-block: 2rem;
+        padding-block: 3rem 2rem;
         color: var(--color-muted);
+        font-size: 0.9rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
       }
-      .footer-inner a {
+      .footer-prompt {
+        margin: 0;
+      }
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1.5rem;
+      }
+      .footer-links a,
+      .footer-link {
         color: var(--color-link);
+        text-decoration: none !important;
       }
-      .footer-inner a:hover {
+      .footer-links a:hover,
+      .footer-link:hover {
         color: var(--color-link-hover);
+        text-decoration: none !important;
       }
     </style>
   </body>

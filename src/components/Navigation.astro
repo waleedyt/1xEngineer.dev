@@ -21,16 +21,15 @@ const { isHome = false } = Astro.props;
   }
   <div class="flex items-center gap-6">
     <a href="/" class="py-4">Home</a>
-    <a href="/about" class="py-4">About</a>
+    <a href="/about" class="py-4">About Me</a>
     <ThemeToggle />
   </div>
 </nav>
 {
   isHome && (
     <p class="tagline">
-      Hi 👋🏽, I am an Engineering Manager by trade. I have built software
-      by leading a team of humans, and now I am learning to work with a team of
-      agents.
+      I build distributed systems and lead engineering teams. These days, I’m
+      exploring what happens when human craftsmanship and AI agents work together.
     </p>
   )
 }
