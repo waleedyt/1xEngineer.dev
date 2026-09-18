@@ -6,6 +6,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
+// Automatically load .env if present
+const envPath = path.resolve(rootDir, '.env');
+if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile(envPath);
+  } catch (e) {
+    // Ignore invalid env file errors
+  }
+}
+
 // Helper to parse frontmatter from MDX
 function parseFrontmatter(content) {
   const match = content.match(/^---\r?\n([\s\S]+?)\r?\n---/);
