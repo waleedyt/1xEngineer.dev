@@ -11,8 +11,6 @@
     "preview": "astro preview",
     "check": "astro check",
     "astro": "astro",
-    "setup-agents": "node scripts/setup-agents.js",
-    "postinstall": "node scripts/setup-agents.js",
     "generate-image": "node scripts/generate-hero-image.js"
   },
   "dependencies": {
