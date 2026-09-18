@@ -10,7 +10,7 @@ Input: use the topic or rough idea supplied in the user's request. If empty, ask
 ## Step 1 — Scaffold the file
 
 1. Derive a short kebab-case slug from the topic (this becomes the permanent URL `/posts/<slug>/` — keep it meaningful, no dates, no stop-words).
-2. Create `src/content/posts/<slug>.mdx` with valid frontmatter per `AGENT.md`'s content model:
+2. Create `src/content/posts/<slug>.mdx` with valid frontmatter per `AGENTS.md`'s content model:
    - `title`: working title (mark it as provisional in your summary — titles are decided last)
    - `description`: `TODO — write after the draft is done`
    - `date`: today's date (`date +%F`)
