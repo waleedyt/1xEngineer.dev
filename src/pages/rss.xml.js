@@ -11,7 +11,7 @@ export async function GET(context) {
   return rss({
     title: '1xEngineer',
     description:
-      'A Software Engineer working in JavaScript Ecosystem; Exploring the mesh of people and engineering',
+      'I build distributed systems and lead engineering teams. These days, I’m exploring what happens when human craftsmanship and AI agents work together.',
     site: context.site,
     items: sorted.map((entry) => ({
       title: entry.data.title,
