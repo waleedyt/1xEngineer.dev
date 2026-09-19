@@ -11,8 +11,14 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 export default defineConfig({
   site: 'https://www.1xengineer.dev',
   integrations: [mdx(), sitemap()],
+  server: {
+    host: true,
+  },
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      allowedHosts: true,
+    },
   },
   markdown: {
     // rehype-slug adds heading ids; rehype-autolink-headings wraps them in
