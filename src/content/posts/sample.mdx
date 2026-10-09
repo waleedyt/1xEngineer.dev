@@ -1,0 +1,232 @@
+---
+title: Scaling FreeRADIUS on AWS. How Complicated Could It Be?
+description: 'Scaling multi-tenant FreeRADIUS on AWS with RadSec: connection affinity, EAP state, REST bottlenecks, and the limits of adding more instances.'
+date: '2026-07-31'
+image: ../../assets/images/scaling-freeradius-aws.jpg
+imageAlt: Editorial illustration representing multi-tenant FreeRADIUS scaling in AWS
+---
+
+During a client project at Emumba, I worked on a multi-tenant RADIUS backend for an enterprise SaaS product. The idea was to let different organizations authenticate access to their networks through a shared cloud service, without running a dedicated RADIUS deployment for every customer.
+
+Put FreeRADIUS behind a load balancer, add an Auto Scaling Group, and let AWS handle the rest. That sounds like a reasonable starting point.
+
+But what exactly are we scaling? The number of servers? The number of connections? Or the number of people who can successfully join their network?
+
+These are related questions, but they are not the same question. And the distinction gets interesting when long-lived TCP connections, multi-round-trip authentication, and a synchronous backend call meet in the same system.
+
+This post walks through those trade-offs. The implementation details refer to FreeRADIUS 3.2.x, and the capacity calculations are illustrative, not production benchmarks.
+
+## First, how does the traffic get here?
+
+For a branch with older access points, the proposed path is:
+
+```text
+Access point
+    → RADIUS/UDP → On-premises RadSec proxy
+    → RADIUS over TLS/TCP → AWS NLB → FreeRADIUS
+```
+
+The proxy bridges the local RADIUS traffic onto a TLS connection across the WAN. A device with native RadSec support can connect without that proxy. RadSec uses TCP port 2083 by default. ([RFC 6614][radius-tls])
+
+In this design, the NLB forwards the encrypted TCP connection, FreeRADIUS terminates mutual TLS, and a backend service supplies tenant-specific policy through `rlm_rest`.
+
+That last part needs a little unpacking, because there are two different identities involved.
+
+The RadSec client certificate identifies the connecting proxy, access point, or switch. It gives us an authenticated peer that we can authorize for a particular tenant. It does **not** automatically authenticate the employee or device trying to join the network. ([RFC 6614][radius-tls])
+
+For this walkthrough, consider EAP-TLS with FreeRADIUS handling the EAP exchange. The laptop or phone—the supplicant—participates in a separate certificate-based authentication exchange through the access point. RADIUS carries that conversation in a sequence of `Access-Request` and `Access-Challenge` messages before the final result. ([RFC 3579][eap-radius]) ([RFC 5216][eap-tls])
+
+REST can supply the authorization policy for the authenticated identity and tenant, such as a `Filter-Id` for an appropriately configured access point. The integration point depends on the authentication method; a policy lookup is not a replacement for completing it. ([Filter-Id specification][filter-id])
+
+Finding a user record is useful. It is not proof that the person asking is that user.
+
+## Why not terminate TLS at the load balancer?
+
+Offloading TLS sounds attractive. There is one less responsibility for the application servers, and the architecture diagram gets a little cleaner.
+
+Except that NLB TLS listeners do not support client-certificate authentication through mTLS. AWS's documented approach is to use a TCP listener and implement mTLS on the target instead. That fits this architecture: FreeRADIUS needs the authenticated peer identity, not just decrypted RADIUS packets. ([AWS listener documentation][aws-listeners])
+
+A dedicated RadSec proxy fleet inside AWS is another option. It could own TLS termination and protocol-aware routing, but it would also become another tier to deploy, scale, monitor, and debug.
+
+For me, another tier needs to solve a specific problem, not just make an appearance because the traffic is RADIUS. For the architecture here, keeping TLS termination and RADIUS processing together is the simpler starting point. We can revisit that decision if the routing requirements outgrow it.
+
+There is a useful implementation detail here. In the FreeRADIUS 3.2.x RadSec reference, the transport peer's certificate Common Name is available through `%{listen:TLS-Client-Cert-Common-Name}`. The `listen:` scope matters: we want the certificate associated with the incoming RadSec connection. ([FreeRADIUS RadSec reference][fr-tls])
+
+However, extracting a field is not a security boundary. My requirement would be to validate the certificate, resolve the authorized peer, and map it to a canonical tenant. Certificate issuance must control which identity a peer can claim; a convenient-looking CN is not enough on its own. ([RFC 6614][radius-tls])
+
+That tenant context needs to carry through policy lookups, cache keys, and audit records. Two customers can both have a user named `admin`. Our backend should not need luck to tell them apart.
+
+## The load balancer is balancing connections
+
+For TCP traffic, an NLB assigns a connection to one target for the life of that connection. It does not inspect each RADIUS request and send it to whichever FreeRADIUS node happens to be quiet. ([AWS routing documentation][aws-overview])
+
+Imagine a small office and a large campus each maintaining one RadSec connection. They contribute the same number of connections to the fleet, but potentially very different amounts of work.
+
+Now imagine the campus's connection lands on FreeRADIUS A. Traffic grows, and the Auto Scaling Group starts FreeRADIUS B and C. Those new nodes can receive new connections. The existing campus connection still belongs to A. ([AWS routing documentation][aws-overview])
+
+**We added capacity. We haven't necessarily made that capacity useful.**
+
+This is why request rates and outstanding work per connection matter more to this question than the fleet's average CPU utilization or connection count. A quiet fleet average can hide one very busy target.
+
+There is an availability-zone choice too. NLB cross-zone routing determines whether connections can reach targets across enabled zones or only within the receiving node's zone. The choice needs to be explicit and the distribution tested; not every healthy instance necessarily participates in every routing decision. ([AWS routing documentation][aws-overview])
+
+### Surely sticky sessions help?
+
+An established TCP connection already has target affinity. NLB source-IP stickiness is a different mechanism: it can keep separate connections from the same source IP on the same target. Clients behind a common NAT can therefore concentrate on one node. ([AWS stickiness documentation][aws-attributes])
+
+That means opening several connections from a busy branch does not necessarily spread its traffic if source-IP stickiness keeps bringing them back together.
+
+I would avoid adding source-IP stickiness solely to keep packets on an existing TCP stream together. But I would not switch it off without first checking how the proxy or native device assigns complete EAP conversations to connections.
+
+There is also a limit below the load-balancing discussion. In the traditional RADIUS/TCP model, the one-byte Identifier permits at most 256 outstanding requests on a connection, with room needed for status traffic. Additional concurrency requires additional connections. This is not a limit of 256 users, or 256 requests per second. ([RFC 6613][radius-tcp])
+
+Connection pooling can therefore be useful for both concurrency and distribution. The missing piece is deciding which work belongs on which connection.
+
+## Reconnect, but don't forget what was happening
+
+A natural response is to periodically recycle connections so that new servers get an opportunity to receive traffic.
+
+Okay, but when is a connection safe to close?
+
+An EAP authentication can span several RADIUS request-response pairs. FreeRADIUS's proxy documentation explicitly warns that the packets of an EAP conversation need to reach the same authentication server. ([FreeRADIUS proxy reference][fr-proxy])
+
+Suppose A returns an `Access-Challenge`. There is no outstanding RADIUS request at that instant, so a connection manager decides that this is a good time to reconnect. The new connection lands on B. The next response from the supplicant then reaches B, while the in-progress EAP state belongs to A.
+
+The connection was recycled between requests, but in the middle of an authentication. Those are different boundaries. ([FreeRADIUS proxy reference][fr-proxy])
+
+Where the client or proxy supports it, I would want conversation-aware draining: establish a replacement connection, assign new authentications to it, and let existing conversations finish on their original connection. Close the old connection after completion or a bounded deadline.
+
+That is a design requirement, not a promise that every RadSec device exposes a configuration switch for it. RFC 6613 recommends using the same TCP connection for packets belonging to one EAP session, but the actual pooling and draining behavior still needs testing in the chosen implementation. ([RFC 6613][radius-tcp])
+
+Recycling also needs to be staggered instead of having every branch reconnect on the hour. And we need to measure whether connections actually move to different targets; a new connection is an opportunity for a new placement, not a guarantee.
+
+When the device cannot drain safely, the architecture has to account for that limitation. It may mean retaining more spare capacity, choosing a different routing arrangement, or explicitly accepting a measured number of authentication restarts during maintenance.
+
+The same question comes back during scale-in and deployments. NLB connection draining does not understand EAP conversations. A TCP connection can remain open while new authentications continue to arrive on it. ([AWS draining documentation][aws-draining])
+
+Adding a node is only half the scaling story. We also need a defensible way to remove one.
+
+## A connection can be open and still be useless
+
+Long-lived connections introduce another question: what happens when nobody uses them for a while?
+
+NLB's default TCP idle timeout is 350 seconds, and it is configurable. Once the connection has expired, subsequent traffic receives a TCP reset. That is different from silently dropping the next request. Other connection-tracking devices along the path can behave differently, so the NLB setting is not the entire timeout policy. ([AWS idle-timeout documentation][aws-idle])
+
+The practical work is to align the listener, server, and known network timeouts, then test both idle expiry and recovery. Properly enabled TCP keepalives can refresh the NLB idle timer. Application-level `Status-Server` probes can provide RADIUS-level liveness where supported, but they are not proof that a complete user authentication will succeed. ([AWS idle-timeout documentation][aws-idle]) ([RFC 5997][status])
+
+The operational goal is to detect a stale path and recover before an employee becomes our connection-health probe.
+
+Keeping a connection alive and recycling it serve different purposes. The first avoids accidental expiry. The second can help with controlled redistribution. Configuring both without understanding their interaction is a good way to create a very elaborate source of reconnects.
+
+## The CPU is fine. Why is authentication slow?
+
+The next bottleneck is less visible in the architecture diagram: the call from FreeRADIUS to the backend service.
+
+In the FreeRADIUS 3.2.x REST implementation, the worker performs a blocking HTTP call. While it waits for the response, that worker is occupied. The backend doesn't need to fail completely to reduce authentication capacity; it can simply become slower. ([FreeRADIUS REST implementation][fr-rest-source]) ([libcurl documentation][curl])
+
+Consider a simplified workload where every request makes one REST call. Assume 64 workers are available, the REST pool can support 64 concurrent calls, and other processing costs are negligible.
+
+| Mean REST response time | Approximate concurrency-limited ceiling |
+| --- | --- |
+| 150 ms | 64 / 0.15 ≈ 427 calls per second |
+| 1.5 seconds | 64 / 1.5 ≈ 43 calls per second |
+
+This is an upper-bound calculation, not a sizing recommendation. A smaller REST pool, other work on the same workers, or backend resource limits can lower it further. It is also a count of **REST calls**, not completed authentications. The number of backend calls in one authentication depends on the EAP method and where policy evaluation runs.
+
+The interesting part is how little needs to change. The number of FreeRADIUS instances is the same. The worker configuration is the same. Yet a tenfold increase in dependency latency gives us roughly one-tenth of the call capacity in this example.
+
+If incoming work continues to exceed what the node can process, queueing and eventually drops follow. FreeRADIUS's own thread-pool documentation warns against repeatedly raising the worker limit when a slow backend is the underlying problem. ([FreeRADIUS thread-pool reference][fr-threads])
+
+My starting point is to bound REST concurrency and timeouts, reuse connections, and fit those timeouts into the complete authentication budget. A generous timeout on every individual step can still produce a very ungenerous experience for the person waiting to connect.
+
+There is also little value in repeating the same policy lookup on every intermediate EAP message when the decision can safely be reused. Caching needs an explicit tenant scope, the relevant identity and policy inputs, and a clear rule for expiry or invalidation. I would not turn an authorization cache into an accidental promise that old permissions remain valid forever.
+
+Then there is the fleet-wide budget. Ten nodes, each allowed 64 simultaneous REST calls, can collectively attempt 640 calls. Raising the per-node limit while adding nodes may just move the bottleneck into the API or database.
+
+For a shared service, that resource budget needs a tenant boundary too. A noisy customer's retry traffic should not be allowed to occupy everyone else's authentication workers.
+
+And a timeout must remain a timeout in the policy logic. The backend being unavailable is not evidence that a request should be accepted.
+
+## Accounting wants a share of those workers too
+
+Authentication is not the only workload. Active sessions can keep producing accounting updates long after the initial login. ([RFC 2866][accounting])
+
+As an example, 30,000 sessions reporting every five minutes produce an average of 100 interim updates per second, before starts, stops, and retries. That is an illustrative workload, not a universal accounting-to-authentication ratio.
+
+Making every accounting update compete with authentication through an unbounded synchronous backend path is not a trade-off I would be comfortable with.
+
+Separate virtual servers are useful for organizing policy, but in the v3 architecture they do not create independent worker pools inside the same daemon. For stronger resource isolation, I would use separate processes or fleets, or a bounded asynchronous path for the expensive accounting work. ([FreeRADIUS thread-pool reference][fr-threads])
+
+The ingress arrangement has to support that split. Authentication and accounting can share a RadSec connection. An NLB forwarding that encrypted stream cannot route each packet type to a different target group; separation has to happen through distinct upstream connections/listeners or after RADIUS is understood. ([FreeRADIUS RadSec reference][fr-tls]) ([AWS listener documentation][aws-listeners])
+
+Buffering is an option, but it brings an important question: **when do we acknowledge the record?**
+
+RFC 2866 says a server must not acknowledge an accounting request it failed to record. The design still needs to define what recording means: a local detail file, a durable queue acknowledgement, or a completed downstream write. ([RFC 2866][accounting])
+
+That contract needs testing against disk exhaustion, duplicate delivery, downstream outages, and losing a node after it has acknowledged locally buffered data. Putting a queue in the diagram does not answer those questions for us.
+
+## Healthy enough to accept TCP, or healthy enough to authenticate?
+
+A TCP health check is useful, but it does not establish that the target can complete EAP authentication or obtain the required policy. An open port and a functioning authentication service are different things. ([AWS health-check documentation][aws-health]) ([FreeRADIUS REST implementation][fr-rest-source])
+
+I would use an application-aware readiness endpoint for node-local failures, track dependency health separately, and run bounded end-to-end authentication probes through the real ingress path.
+
+The separation matters. If every node declares itself unhealthy whenever the shared policy service slows down, we may remove the entire fleet from healthy routing at once.
+
+NLB's documented behavior when all targets fail health checks across enabled zones is to fail open for routing: traffic can reach targets regardless of health. That does not bypass RADIUS authentication, but it does mean that making every node unhealthy is not a reliable way to stop traffic. ([AWS health-check documentation][aws-health])
+
+Before wiring a dependency check into readiness, the useful question is whether the resulting action helps recovery or just creates more connection churn.
+
+## And no, TCP doesn't fix everything
+
+Moving the WAN leg from UDP to TCP changes the transport problem, but it does not remove every size or fragmentation concern. EAP-TLS has its own fragmentation mechanism, and the legacy access-point-to-proxy leg is still UDP in this architecture. ([RFC 5216][eap-tls])
+
+Realistic certificate chains and the actual device/proxy combination still belong in the test plan. RadSec is not a blanket fix for MTU issues.
+
+The same applies to latency. Cold connections, established connections, and complete authentications need separate measurements. One convenient handshake estimate is not an end-to-end latency budget.
+
+## What would convince me that it scales?
+
+A higher requests-per-second number from one healthy node would not be enough.
+
+I would want to see completed-authentication success rates and latency percentiles under a representative mix of tenants, sites, EAP methods, and accounting traffic. Alongside those, I would track work per connection, busy workers, REST latency, queue depth, and accounting backlog.
+
+Then I would change something while the test is running: add nodes, remove a busy node, slow the backend, let connections idle, or rotate a certificate. The useful results are how much work moves, how many authentications restart or fail, and how quickly the system recovers.
+
+Those tests would also help separate two very different claims: that the fleet has enough total capacity, and that the architecture can put that capacity to use when it is needed.
+
+For me, that is the central point of scaling this design. We need to know which connection carries the work, which node owns the authentication state, and which dependency decides how long a worker stays busy.
+
+Once those are understood, the infrastructure choices become easier to justify. Until then, another instance might help—or it might spend the afternoon watching the original instance do all the work.
+
+PS: The goal is not to build the most elaborate RADIUS architecture. It is to let someone join their network reliably, while giving the engineers operating it a reasonable chance of understanding what happens when they cannot.
+
+[radius-tls]: https://www.rfc-editor.org/rfc/rfc6614.html
+[eap-radius]: https://www.rfc-editor.org/rfc/rfc3579.html
+[eap-tls]: https://www.rfc-editor.org/rfc/rfc5216.html
+[filter-id]: https://www.rfc-editor.org/rfc/rfc2865.html#section-5.11
+[aws-listeners]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html
+[fr-tls]: https://raw.githubusercontent.com/FreeRADIUS/freeradius-server/v3.2.x/raddb/sites-available/tls
+[aws-overview]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html
+[aws-attributes]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/edit-target-group-attributes.html#sticky-sessions
+[radius-tcp]: https://www.rfc-editor.org/rfc/rfc6613.html
+[fr-proxy]: https://raw.githubusercontent.com/FreeRADIUS/freeradius-server/v3.2.x/raddb/proxy.conf
+[aws-draining]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/edit-target-group-attributes.html#deregistration-delay
+[aws-idle]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#connection-idle-timeout
+[status]: https://www.rfc-editor.org/rfc/rfc5997.html
+[fr-rest-source]: https://raw.githubusercontent.com/FreeRADIUS/freeradius-server/v3.2.x/src/modules/rlm_rest/rest.c
+[curl]: https://curl.se/libcurl/c/curl_easy_perform.html
+[fr-threads]: https://raw.githubusercontent.com/FreeRADIUS/freeradius-server/v3.2.x/raddb/radiusd.conf.in
+[accounting]: https://www.rfc-editor.org/rfc/rfc2866.html
+[aws-health]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html
+
+{/*
+Editorial checks before publication (not rendered):
+- The original July 31, 2026 date and hero-image reference have been retained; confirm both.
+- EAP-TLS is explicitly a walkthrough example, not a verified statement of the production EAP method.
+- Capacity figures are illustrative calculations. No production benchmarks or new incident stories have been invented.
+- The original untested configuration blocks are omitted. Add configuration only after validating a complete, version-pinned setup.
+- The original PNG diagrams were not supplied. The body uses a text schematic; update and verify the topology/sequence images before embedding them.
+- The original image references were scaling-freeradius-architecture.png, scaling-freeradius-sequence.png, and scaling-freeradius-native-sequence.png.
+- Technical sources were checked on September 24, 2026; the linked FreeRADIUS v3.2.x branch is a moving reference rather than a release pin.
+*/}
